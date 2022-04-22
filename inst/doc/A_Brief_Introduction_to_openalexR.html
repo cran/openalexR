@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>A Brief Introduction to openalexR</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">A Brief Introduction to openalexR</h1>
+
+
+
+<p> </p>
+<p><em><a href="https://github.com/massimoaria/openalexR" class="uri">https://github.com/massimoaria/openalexR</a></em></p>
+<p><em>Latest version: 0.0.1, 2022-04-20</em></p>
+<p> </p>
+<p><strong>by Massimo Aria</strong></p>
+<p>Full Professor in Social Statistics</p>
+<p>PhD in Computational Statistics</p>
+<p>Laboratory and Research Group STAD Statistics, Technology, Data
+Analysis</p>
+<p>Department of Economics and Statistics</p>
+<p>University of Naples Federico II</p>
+<p>email <a href="mailto:aria@unina.it" class="email">aria@unina.it</a></p>
+<p><a href="https://massimoaria.com" class="uri">https://massimoaria.com</a></p>
+<p> </p>
+<div id="an-r-package-to-gather-bibliographic-data-from-openalex." class="section level1">
+<h1>An R-package to gather bibliographic data from OpenAlex.</h1>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p> </p>
+<pre><code>The goal of openalexR is to gather bibliographic metadata about publications, authors, venues, institutions and concepts from OpenAlex using API.</code></pre>
+<p>OpenAlex is a fully open catalog of the global research system. It’s
+named after the ancient Library of Alexandria. The OpenAlex dataset
+describes scholarly entities and how those entities are connected to
+each other. There are five types of entities:</p>
+<ul>
+<li><p><strong>Works</strong> are papers, books, datasets, etc; they
+cite other works</p></li>
+<li><p><strong>Authors</strong> are people who create works</p></li>
+<li><p><strong>Venues</strong> are journals and repositories that host
+works</p></li>
+<li><p><strong>Institutions</strong> are universities and other orgs
+that are affiliated with works (via authors)</p></li>
+<li><p><strong>Concepts</strong> <em>tag</em> Works with a
+topic</p></li>
+</ul>
+<p>(source: <a href="https://openalex.org">OpenAlex website</a>)</p>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>You can install the developer version of the openalexR from <a href="https://github.com">GitHub</a> with:</p>
+<pre><code>install.packages(&quot;devtools&quot;)
+devtools::install_github(&quot;massimoaria/openalexR&quot;)</code></pre>
+<p>You can install the released version of openalexR from <a href="https://CRAN.R-project.org">CRAN</a> with:</p>
+<pre><code>install.packages(&quot;openalexR&quot;)</code></pre>
+<p> </p>
+<p> </p>
+</div>
+<div id="package-loading" class="section level2">
+<h2>Package loading</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>   <span class="fu">library</span>(openalexR)</span></code></pre></div>
+<p> </p>
+<p> </p>
+</div>
+</div>
+<div id="openalexr-overview" class="section level1">
+<h1>openalexR overview</h1>
+<p>The basic idea of openalexR is to provide three main functions
+helping the user to:</p>
+<ul>
+<li><p>Create a query by passing one or more arguments to a function
+(function <strong>oaQueryBuild</strong>)</p></li>
+<li><p>Gather a collection of entities in JSON format (function
+<strong>oaApiRequest</strong>)</p></li>
+<li><p>Transform the JSON in a data frame (similar to an excel sheet)
+can be used as input in a bibliometric or science mapping analysis
+(e.g. using the bibliometrix package) (function
+<strong>oa2df</strong>)</p></li>
+</ul>
+<p> </p>
+<p>OpenAlex defined a custom query language based on entity type. You
+can choose to write a valid query using that language or, in
+alternative, using the function <strong>oaQueryBuild</strong>.</p>
+<p><strong>oaQueryBuild</strong> generates a valid query, written
+following the OpenAlex API language, from a set of arguments provided by
+the user.</p>
+<p>The function <strong>oaApiRequest</strong> downloads a collection of
+entities matching the query created by <strong>oaQueryBuild</strong> or
+manually written by the user. The function will return a JSON object in
+a list format.</p>
+<p>The function <strong>oa2df</strong> converts the JSON object in
+classical bibliographic data frame.</p>
+<p>Finally, the function <strong>oa2bibliometrix</strong> converts an
+OpenAlex data frame into a bibliometrix object</p>
+<p> </p>
+<div id="get-full-records-through-entity-ids." class="section level2">
+<h2>Get full records through entity IDs.</h2>
+<p> </p>
+<div id="query-to-obtain-all-information-about-a-single-publications" class="section level3">
+<h3>Query to obtain all information about a single publications</h3>
+<p>The following paper:</p>
+<pre><code>Aria, M., &amp; Cuccurullo, C. (2017). bibliometrix: An R-tool for comprehensive science mapping analysis. Journal of informetrics, 11(4), 959-975.</code></pre>
+<p>is associated to the OpenAlex-id W2755950973.</p>
+<p>The function <strong>oaQueryBuild</strong> supports the query
+creation by providing a set of arguments.</p>
+<p>In this example, we need to pass a single argument to the function,
+that is, the identifier of the entity to download: identifier =
+“W2755950973”.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>query_work <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">identifier =</span> <span class="st">&quot;W2755950973&quot;</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">entity =</span> <span class="st">&quot;works&quot;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(query_work)</span></code></pre></div>
+<pre><code>## https://api.openalex.org/works/W2755950973</code></pre>
+<p>As results, <strong>oaQueryBuild</strong> returns the query string
+including the OpenAlex endpoint API server address. You should change it
+by using the argument “endpoint = <em>address</em>”</p>
+<p>The function <strong>oaApiRequest</strong> downloads the
+bibliographic records matching the query.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a> res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> query_work</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res, <span class="at">entity =</span> <span class="st">&quot;works&quot;</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 1
+## Columns: 25
+## $ id            &lt;chr&gt; &quot;https://openalex.org/W2755950973&quot;
+## $ TI            &lt;chr&gt; &quot;bibliometrix: An R-tool for comprehensive science mappi…
+## $ author        &lt;list&gt; [&lt;data.frame[2 x 10]&gt;]
+## $ AB            &lt;chr&gt; &quot;Abstract The use of bibliometrics is gradually extendin…
+## $ pubdata       &lt;chr&gt; &quot;2017-11-01&quot;
+## $ SO            &lt;chr&gt; &quot;Journal of Informetrics&quot;
+## $ SO_ID         &lt;chr&gt; &quot;https://openalex.org/V205292342&quot;
+## $ PU            &lt;chr&gt; &quot;Elsevier&quot;
+## $ IS            &lt;list&gt; &lt;&quot;1875-5879&quot;, &quot;1751-1577&quot;&gt;
+## $ URL           &lt;chr&gt; &quot;https://doi.org/10.1016/j.joi.2017.08.007&quot;
+## $ first_page    &lt;chr&gt; &quot;959&quot;
+## $ last_page     &lt;chr&gt; &quot;975&quot;
+## $ volume        &lt;chr&gt; &quot;11&quot;
+## $ issue         &lt;chr&gt; &quot;4&quot;
+## $ OA            &lt;lgl&gt; FALSE
+## $ TC            &lt;int&gt; 1180
+## $ TCperYear     &lt;list&gt; [&lt;data.frame[6 x 2]&gt;]
+## $ PY            &lt;int&gt; 2017
+## $ cited_by_url  &lt;chr&gt; &quot;https://api.openalex.org/works?filter=cites:W2755950973&quot;
+## $ ids           &lt;list&gt; [[&lt;data.frame[3 x 2]&gt;]]
+## $ DI            &lt;chr&gt; &quot;https://doi.org/10.1016/j.joi.2017.08.007&quot;
+## $ DT            &lt;chr&gt; &quot;journal-article&quot;
+## $ CR            &lt;list&gt; &lt;&quot;https://openalex.org/W2065892499&quot;, &quot;https://openalex.…
+## $ related_works &lt;list&gt; &lt;&quot;https://openalex.org/W2408216567&quot;, &quot;https://openalex.o…
+## $ concept       &lt;list&gt; [&lt;data.frame[4 x 5]&gt;]</code></pre>
+<p> </p>
+</div>
+<div id="query-to-obtain-all-information-about-a-single-publications-using-external-id-formats" class="section level3">
+<h3>Query to obtain all information about a single publications using
+external id formats</h3>
+<p>OpenAlex endpoint accepts an OpenAlex ID, but many external IDs (eg
+DOI, ISSN) are accepted as well, in several formats.</p>
+<p><strong>DOI (Digital Object Identifier)</strong></p>
+<p>We can get a publication record through its DOI using the format
+<strong>doi:</strong><em>doi identifier</em>. Example:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>query_work <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">identifier =</span> <span class="st">&quot;doi:10.1016/j.joi.2017.08.007&quot;</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">entity =</span> <span class="st">&quot;works&quot;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(query_work)</span></code></pre></div>
+<pre><code>## https://api.openalex.org/works/doi:10.1016/j.joi.2017.08.007</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a> res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> query_work</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res, <span class="at">entity =</span> <span class="st">&quot;works&quot;</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 1
+## Columns: 25
+## $ id            &lt;chr&gt; &quot;https://openalex.org/W2755950973&quot;
+## $ TI            &lt;chr&gt; &quot;bibliometrix: An R-tool for comprehensive science mappi…
+## $ author        &lt;list&gt; [&lt;data.frame[2 x 10]&gt;]
+## $ AB            &lt;chr&gt; &quot;Abstract The use of bibliometrics is gradually extendin…
+## $ pubdata       &lt;chr&gt; &quot;2017-11-01&quot;
+## $ SO            &lt;chr&gt; &quot;Journal of Informetrics&quot;
+## $ SO_ID         &lt;chr&gt; &quot;https://openalex.org/V205292342&quot;
+## $ PU            &lt;chr&gt; &quot;Elsevier&quot;
+## $ IS            &lt;list&gt; &lt;&quot;1875-5879&quot;, &quot;1751-1577&quot;&gt;
+## $ URL           &lt;chr&gt; &quot;https://doi.org/10.1016/j.joi.2017.08.007&quot;
+## $ first_page    &lt;chr&gt; &quot;959&quot;
+## $ last_page     &lt;chr&gt; &quot;975&quot;
+## $ volume        &lt;chr&gt; &quot;11&quot;
+## $ issue         &lt;chr&gt; &quot;4&quot;
+## $ OA            &lt;lgl&gt; FALSE
+## $ TC            &lt;int&gt; 1180
+## $ TCperYear     &lt;list&gt; [&lt;data.frame[6 x 2]&gt;]
+## $ PY            &lt;int&gt; 2017
+## $ cited_by_url  &lt;chr&gt; &quot;https://api.openalex.org/works?filter=cites:W2755950973&quot;
+## $ ids           &lt;list&gt; [[&lt;data.frame[3 x 2]&gt;]]
+## $ DI            &lt;chr&gt; &quot;https://doi.org/10.1016/j.joi.2017.08.007&quot;
+## $ DT            &lt;chr&gt; &quot;journal-article&quot;
+## $ CR            &lt;list&gt; &lt;&quot;https://openalex.org/W2065892499&quot;, &quot;https://openalex.…
+## $ related_works &lt;list&gt; &lt;&quot;https://openalex.org/W2408216567&quot;, &quot;https://openalex.o…
+## $ concept       &lt;list&gt; [&lt;data.frame[4 x 5]&gt;]</code></pre>
+<p><strong>Persistent Identifiers (PIDs)</strong></p>
+<p>Many persistent identifiers (PIDs) are canonically expressed as a URL
+that will take you to the thing being identified. Where these URL
+formats exist, OpenAlex treats them as the canonical ID, and also
+accepts them as valid IDs. Example:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>query_work <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">identifier =</span> <span class="st">&quot;doi:https://doi.org/10.1016/j.joi.2017.08.007&quot;</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">entity =</span> <span class="st">&quot;works&quot;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(query_work)</span></code></pre></div>
+<pre><code>## https://api.openalex.org/works/doi:https://doi.org/10.1016/j.joi.2017.08.007</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a> res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> query_work</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res, <span class="at">entity =</span> <span class="st">&quot;works&quot;</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 1
+## Columns: 25
+## $ id            &lt;chr&gt; &quot;https://openalex.org/W2755950973&quot;
+## $ TI            &lt;chr&gt; &quot;bibliometrix: An R-tool for comprehensive science mappi…
+## $ author        &lt;list&gt; [&lt;data.frame[2 x 10]&gt;]
+## $ AB            &lt;chr&gt; &quot;Abstract The use of bibliometrics is gradually extendin…
+## $ pubdata       &lt;chr&gt; &quot;2017-11-01&quot;
+## $ SO            &lt;chr&gt; &quot;Journal of Informetrics&quot;
+## $ SO_ID         &lt;chr&gt; &quot;https://openalex.org/V205292342&quot;
+## $ PU            &lt;chr&gt; &quot;Elsevier&quot;
+## $ IS            &lt;list&gt; &lt;&quot;1875-5879&quot;, &quot;1751-1577&quot;&gt;
+## $ URL           &lt;chr&gt; &quot;https://doi.org/10.1016/j.joi.2017.08.007&quot;
+## $ first_page    &lt;chr&gt; &quot;959&quot;
+## $ last_page     &lt;chr&gt; &quot;975&quot;
+## $ volume        &lt;chr&gt; &quot;11&quot;
+## $ issue         &lt;chr&gt; &quot;4&quot;
+## $ OA            &lt;lgl&gt; FALSE
+## $ TC            &lt;int&gt; 1180
+## $ TCperYear     &lt;list&gt; [&lt;data.frame[6 x 2]&gt;]
+## $ PY            &lt;int&gt; 2017
+## $ cited_by_url  &lt;chr&gt; &quot;https://api.openalex.org/works?filter=cites:W2755950973&quot;
+## $ ids           &lt;list&gt; [[&lt;data.frame[3 x 2]&gt;]]
+## $ DI            &lt;chr&gt; &quot;https://doi.org/10.1016/j.joi.2017.08.007&quot;
+## $ DT            &lt;chr&gt; &quot;journal-article&quot;
+## $ CR            &lt;list&gt; &lt;&quot;https://openalex.org/W2065892499&quot;, &quot;https://openalex.…
+## $ related_works &lt;list&gt; &lt;&quot;https://openalex.org/W2408216567&quot;, &quot;https://openalex.o…
+## $ concept       &lt;list&gt; [&lt;data.frame[4 x 5]&gt;]</code></pre>
+</div>
+<div id="query-to-obtain-all-information-about-a-two-o-more-publications" class="section level3">
+<h3>Query to obtain all information about a two o more publications</h3>
+<p>To download the records of two o more identifiers through a single
+query, we can recursively apply oaApiRequest to each id using the
+function lapply.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>ids <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;W2755950973&quot;</span>,<span class="st">&quot;W3005144120&quot;</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">lapply</span>(ids, <span class="cf">function</span>(x){</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">oaApiRequest</span>(</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">identifier =</span> x,</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">entity =</span> <span class="st">&quot;works&quot;</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res, <span class="at">entity =</span> <span class="st">&quot;works&quot;</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 2
+## Columns: 25
+## $ id            &lt;chr&gt; &quot;https://openalex.org/W2755950973&quot;, &quot;https://openalex.or…
+## $ TI            &lt;chr&gt; &quot;bibliometrix: An R-tool for comprehensive science mappi…
+## $ author        &lt;list&gt; [&lt;data.frame[2 x 10]&gt;], [&lt;data.frame[3 x 10]&gt;]
+## $ AB            &lt;chr&gt; &quot;Abstract The use of bibliometrics is gradually extendi…
+## $ pubdata       &lt;chr&gt; &quot;2017-11-01&quot;, &quot;2020-06-01&quot;
+## $ SO            &lt;chr&gt; &quot;Journal of Informetrics&quot;, &quot;Social Indicators Research&quot;
+## $ SO_ID         &lt;chr&gt; &quot;https://openalex.org/V205292342&quot;, &quot;https://openalex.org…
+## $ PU            &lt;chr&gt; &quot;Elsevier&quot;, &quot;Springer Nature&quot;
+## $ IS            &lt;list&gt; &lt;&quot;1875-5879&quot;, &quot;1751-1577&quot;&gt;, &lt;&quot;1573-0921&quot;, &quot;0303-8300&quot;&gt;
+## $ URL           &lt;chr&gt; &quot;https://doi.org/10.1016/j.joi.2017.08.007&quot;, &quot;https://do…
+## $ first_page    &lt;chr&gt; &quot;959&quot;, &quot;803&quot;
+## $ last_page     &lt;chr&gt; &quot;975&quot;, &quot;831&quot;
+## $ volume        &lt;chr&gt; &quot;11&quot;, &quot;149&quot;
+## $ issue         &lt;chr&gt; &quot;4&quot;, &quot;3&quot;
+## $ OA            &lt;lgl&gt; FALSE, FALSE
+## $ TC            &lt;int&gt; 1180, 33
+## $ TCperYear     &lt;list&gt; [&lt;data.frame[6 x 2]&gt;], [&lt;data.frame[3 x 2]&gt;]
+## $ PY            &lt;int&gt; 2017, 2020
+## $ cited_by_url  &lt;chr&gt; &quot;https://api.openalex.org/works?filter=cites:W2755950973…
+## $ ids           &lt;list&gt; [[&lt;data.frame[3 x 2]&gt;]], [[&lt;data.frame[3 x 2]&gt;]]
+## $ DI            &lt;chr&gt; &quot;https://doi.org/10.1016/j.joi.2017.08.007&quot;, &quot;https://do…
+## $ DT            &lt;chr&gt; &quot;journal-article&quot;, &quot;journal-article&quot;
+## $ CR            &lt;list&gt; &lt;&quot;https://openalex.org/W2065892499&quot;, &quot;https://openalex.o…
+## $ related_works &lt;list&gt; &lt;&quot;https://openalex.org/W2408216567&quot;, &quot;https://openalex.…
+## $ concept       &lt;list&gt; [&lt;data.frame[4 x 5]&gt;], [&lt;data.frame[8 x 5]&gt;]</code></pre>
+</div>
+<div id="query-to-obtain-all-information-about-a-single-author" class="section level3">
+<h3>Query to obtain all information about a single author</h3>
+<p>The author Massimo Aria is associated to the OpenAlex-id
+A923435168.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>query_author <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">identifier =</span> <span class="st">&quot;A923435168&quot;</span>,</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">entity =</span> <span class="st">&quot;authors&quot;</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(query_author)</span></code></pre></div>
+<pre><code>## https://api.openalex.org/authors/A923435168</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a> res_author <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> query_author,</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total.count =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a> )</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res_author, <span class="at">entity =</span> <span class="st">&quot;authors&quot;</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 1
+## Columns: 15
+## $ id                  &lt;chr&gt; &quot;https://openalex.org/A923435168&quot;
+## $ name                &lt;chr&gt; &quot;Massimo Aria&quot;
+## $ name_alternatives   &lt;lgl&gt; NA
+## $ ids                 &lt;list&gt; [&lt;data.frame[4 x 2]&gt;]
+## $ orcid               &lt;chr&gt; &quot;https://orcid.org/0000-0002-8517-9411&quot;
+## $ works_count         &lt;int&gt; 102
+## $ TC                  &lt;int&gt; 2613
+## $ TCperYear           &lt;list&gt; [&lt;data.frame[11 x 3]&gt;]
+## $ affiliation_name    &lt;chr&gt; &quot;University of Naples Federico II&quot;
+## $ affiliation_id      &lt;chr&gt; &quot;https://openalex.org/I71267560&quot;
+## $ affiliation_ror     &lt;chr&gt; &quot;https://ror.org/05290cv24&quot;
+## $ affiliation_country &lt;chr&gt; &quot;IT&quot;
+## $ affiliation_type    &lt;chr&gt; &quot;education&quot;
+## $ concept             &lt;list&gt; [&lt;data.frame[11 x 5]&gt;]
+## $ works_api_url       &lt;chr&gt; &quot;https://api.openalex.org/works?filter=author.id:A…</code></pre>
+<p> </p>
+<p> </p>
+</div>
+</div>
+<div id="get-all-entities-matching-a-set-of-inclusionexclusion-criteria-filters" class="section level2">
+<h2>Get all entities matching a set of inclusion/exclusion criteria
+(filters)</h2>
+<p>In most cases, we are interested in downloading a collection of items
+that meet one or more inclusion/exclusion criteria (filters).</p>
+<p>In this case, the query definition will not be based on a single
+identifier but the choice of the entity type (usually “works”, but also
+“authors”, “venues”, etc.) and one or more filters about this
+entity.</p>
+<p>Filters narrow the list down to just entities that meet a particular
+condition–specifically, a particular value for a particular attribute.
+Supported attributes for each endpoints are listed on <a href="https://docs.openalex.org/api/get-lists-of-entities#filter">OpenAlex
+API Documentation Website</a>.</p>
+<p>Filters are formatted thusly:
+<strong>attribute:</strong><em>value</em>. You set them using the
+<em>?filter</em> query parameter. Filters are case-insensitive.</p>
+<p> </p>
+<p>Each endpoint supports its own list of filters. Here they are, by
+endpoint:</p>
+<p> </p>
+<p><strong>/works filters</strong></p>
+<p>You can filter using these attributes of the Works object.</p>
+<ul>
+<li><p>display_name.search (alias: title.search)</p></li>
+<li><p>publication_year</p></li>
+<li><p>publication_date</p></li>
+<li><p>from_publication_date</p></li>
+<li><p>to_publication_date</p></li>
+<li><p>host_venue.issn</p></li>
+<li><p>authorships.author.id (alias: author.id)</p></li>
+<li><p>type</p></li>
+</ul>
+<p>etc.</p>
+<p>You can find more documentation about each attribute on the <a href="https://docs.openalex.org/about-the-data/work">OA Documentation
+Work page</a>.</p>
+<p> </p>
+<p><strong>/authors filters</strong></p>
+<p>You can filter using these attributes of the Authors object.</p>
+<ul>
+<li><p>display_name.search</p></li>
+<li><p>works_count</p></li>
+<li><p>cited_by_count</p></li>
+<li><p>last_known_institution.id</p></li>
+</ul>
+<p>etc.</p>
+<p>You can find more documentation about each attribute on the <a href="https://docs.openalex.org/about-the-data/author">OA Documentation
+Author page</a>.</p>
+<p> </p>
+<p><strong>/venues filters</strong></p>
+<p>You can filter using these attributes of the Venue object.</p>
+<ul>
+<li><p>display_name.search</p></li>
+<li><p>issn</p></li>
+<li><p>works_count</p></li>
+<li><p>cited_by_count</p></li>
+</ul>
+<p>etc.</p>
+<p>You can find more documentation about each attribute on the <a href="https://docs.openalex.org/about-the-data/venue">OA Documentation
+Venue page</a>.</p>
+<p> </p>
+<p><strong>/institutions filters</strong></p>
+<p>You can filter using these attributes of the Institution object.</p>
+<ul>
+<li><p>display_name.search</p></li>
+<li><p>country_code</p></li>
+<li><p>type</p></li>
+<li><p>works_count</p></li>
+<li><p>cited_by_count</p></li>
+<li><p>x_concepts.id</p></li>
+</ul>
+<p>You can find more documentation about each attribute on the <a href="https://docs.openalex.org/about-the-data/institution">OA
+Documentation Institution page</a>.</p>
+<p> </p>
+<p><strong>/concepts filters</strong></p>
+<p>You can filter using these attributes of the Concept object. You can
+find more documentation about each attribute on the Concept page.</p>
+<ul>
+<li><p>display_name.search</p></li>
+<li><p>level</p></li>
+<li><p>works_count</p></li>
+<li><p>cited_by_count</p></li>
+<li><p>ancestors.id</p></li>
+</ul>
+<p>You can find more documentation about each attribute on the <a href="https://docs.openalex.org/about-the-data/concept">OA Documentation
+Concept page</a>.</p>
+<p> </p>
+<p>Below we show some examples of filters in use.</p>
+<p> </p>
+<div id="filters-based-on-string-matching" class="section level3">
+<h3>Filters based on string matching</h3>
+<p><strong>We want to download all works, cited more than 50 times,
+published between 2020 and 2021, which include the strings “bibliometric
+analysis” or “science mapping” in the title.</strong></p>
+<p> </p>
+<p>To do that, we have to set filters about three attributes: title
+content (<em>“title.search”</em>), starting date for publication
+(<em>“from_publication_date”</em>), and ending date for publication
+(<em>“to_publication_date”</em>).</p>
+<p>Starting and ending dates can be passed to the function
+<strong>oaQueryBuild</strong> using the arguments <em>date_from</em> and
+<em>date_to</em>. The format is YYYY-MM-DD.</p>
+<p>The other attributes can be passed to the function through the
+argument <em>filter</em>.</p>
+<p>When an attribute has more than one item, these can be separated by
+the boolean operator OR represented by the symbol <strong>|</strong>
+.</p>
+<p>On the contrary, different attributes have to be separated by
+commas.</p>
+<p>e.g. <strong>filter = ‘title.search:“bibliometric analysis”|“science
+mapping”, cited_by_count:&gt;50’</strong></p>
+<p>where:</p>
+<ul>
+<li>‘title.search:“bibliometric analysis”|“science mapping’</li>
+</ul>
+<p>means all works containing the string “bibliometric analysis” OR
+“science mapping” in the publication title.</p>
+<p>and:</p>
+<ul>
+<li>cited_by_count:&gt;100</li>
+</ul>
+<p>means all works cited more than 100 times.</p>
+<p>The whole filter <strong>‘title.search:“bibliometric
+analysis”|“science mapping”,cited_by_count:&gt;100’</strong></p>
+<p>can be read as:</p>
+<pre><code>*&quot;all works containing the string &quot;bibliometric analysis&quot; OR &quot;science mapping&quot; in the publication title AND cited more than 50 times&quot;*.</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>query <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">identifier=</span><span class="cn">NULL</span>,</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">entity =</span> <span class="st">&quot;works&quot;</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">filter =</span> <span class="st">&#39;title.search:&quot;bibliometric analysis&quot;|&quot;science mapping&quot;,cited_by_count:&gt;100&#39;</span>,</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">date_from =</span> <span class="st">&quot;2000-01-01&quot;</span>,</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">date_to =</span> <span class="st">&quot;2021-12-31&quot;</span>,</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">search=</span><span class="cn">NULL</span>,</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">sort=</span><span class="st">&quot;cited_by_count:desc&quot;</span>,</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">endpoint =</span> <span class="st">&quot;https://api.openalex.org/&quot;</span>)</span></code></pre></div>
+<p>The <strong>sort</strong> argument indicates how results have to be
+sorted.</p>
+<p>In this example results are sorted by total citations in a descending
+order.</p>
+<p>Setting the argument total.count=TRUE, the function
+<strong>oaApiRequest</strong> returns the number of items matching the
+query without downloading the collection.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a> res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> query,</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total.count =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>res<span class="sc">$</span>count</span></code></pre></div>
+<pre><code>## [1] 74</code></pre>
+<p>Then, we can download the collection:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a> res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> query,</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total.count =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<p>and transform it into a data frame:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res, <span class="at">entity =</span> <span class="st">&quot;works&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 74
+## Columns: 25
+## $ id            &lt;chr&gt; &quot;https://openalex.org/W2755950973&quot;, &quot;https://openalex.or…
+## $ TI            &lt;chr&gt; &quot;bibliometrix: An R-tool for comprehensive science mappi…
+## $ author        &lt;list&gt; [&lt;data.frame[2 x 10]&gt;], [&lt;data.frame[4 x 10]&gt;], [&lt;data.…
+## $ AB            &lt;chr&gt; &quot;Abstract The use of bibliometrics is gradually extendin…
+## $ pubdata       &lt;chr&gt; &quot;2017-11-01&quot;, &quot;2011-07-01&quot;, &quot;2015-04-01&quot;, &quot;2005-09-01&quot;, …
+## $ SO            &lt;chr&gt; &quot;Journal of Informetrics&quot;, &quot;Journal of the Association f…
+## $ SO_ID         &lt;chr&gt; &quot;https://openalex.org/V205292342&quot;, &quot;https://openalex.org…
+## $ PU            &lt;chr&gt; &quot;Elsevier&quot;, &quot;Wiley&quot;, &quot;Elsevier&quot;, &quot;SAGE&quot;, &quot;Wiley&quot;, &quot;Sprin…
+## $ IS            &lt;list&gt; &lt;&quot;1875-5879&quot;, &quot;1751-1577&quot;&gt;, &lt;&quot;1532-2882&quot;, &quot;1532-2890&quot;&gt;,…
+## $ URL           &lt;chr&gt; &quot;https://doi.org/10.1016/j.joi.2017.08.007&quot;, &quot;https://do…
+## $ first_page    &lt;chr&gt; &quot;959&quot;, &quot;1382&quot;, &quot;101&quot;, &quot;283&quot;, &quot;2215&quot;, &quot;1809&quot;, &quot;1609&quot;, &quot;1&quot;…
+## $ last_page     &lt;chr&gt; &quot;975&quot;, &quot;1402&quot;, &quot;114&quot;, &quot;317&quot;, &quot;2222&quot;, &quot;1831&quot;, &quot;1630&quot;, &quot;40…
+## $ volume        &lt;chr&gt; &quot;11&quot;, &quot;62&quot;, &quot;162&quot;, &quot;44&quot;, &quot;66&quot;, &quot;105&quot;, &quot;63&quot;, &quot;2&quot;, &quot;27&quot;, &quot;…
+## $ issue         &lt;chr&gt; &quot;4&quot;, &quot;7&quot;, NA, &quot;3&quot;, &quot;11&quot;, &quot;3&quot;, &quot;8&quot;, &quot;2&quot;, &quot;5&quot;, &quot;1&quot;, &quot;4&quot;, N…
+## $ OA            &lt;lgl&gt; FALSE, FALSE, FALSE, NA, TRUE, TRUE, FALSE, TRUE, FALSE,…
+## $ TC            &lt;int&gt; 1180, 849, 725, 671, 659, 426, 382, 329, 314, 306, 304, …
+## $ TCperYear     &lt;list&gt; [&lt;data.frame[6 x 2]&gt;], [&lt;data.frame[11 x 2]&gt;], [&lt;data.f…
+## $ PY            &lt;int&gt; 2017, 2011, 2015, 2005, 2015, 2015, 2012, 2017, 2007, 20…
+## $ cited_by_url  &lt;chr&gt; &quot;https://api.openalex.org/works?filter=cites:W2755950973…
+## $ ids           &lt;list&gt; [[&lt;data.frame[3 x 2]&gt;]], [[&lt;data.frame[3 x 2]&gt;]], [[&lt;da…
+## $ DI            &lt;chr&gt; &quot;https://doi.org/10.1016/j.joi.2017.08.007&quot;, &quot;https://do…
+## $ DT            &lt;chr&gt; &quot;journal-article&quot;, &quot;journal-article&quot;, &quot;journal-article&quot;,…
+## $ CR            &lt;list&gt; &lt;&quot;https://openalex.org/W2065892499&quot;, &quot;https://openalex.…
+## $ related_works &lt;list&gt; &lt;&quot;https://openalex.org/W2408216567&quot;, &quot;https://openalex.…
+## $ concept       &lt;list&gt; [&lt;data.frame[4 x 5]&gt;], [&lt;data.frame[4 x 5]&gt;], [&lt;data.fr…</code></pre>
+<p> </p>
+</div>
+<div id="get-all-works-citing-a-particular-work." class="section level3">
+<h3>Get all works citing a particular work.</h3>
+<p>We can download all publications citing another publication by using
+the filter attribute <strong>cites:</strong><em>id</em>.</p>
+<p>For example, if we want to download all publications citing the
+article Aria and Cuccurullo (2017) during the first quarter of 2022, we
+have to set the arguments filter, date_from, and date_to as:</p>
+<p><strong>filter = “cites:W2755950973”</strong></p>
+<p><strong>date_from = “2022-01-01”</strong></p>
+<p><strong>date_to = “2022-03-31”</strong></p>
+<p>where <em>“W2755950973”</em> is the OA id for the article by Aria and
+Cuccurullo (2017).</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>query1 <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a> <span class="at">identifier=</span><span class="cn">NULL</span>,</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a> <span class="at">entity =</span> <span class="st">&quot;works&quot;</span>,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a> <span class="at">filter =</span> <span class="st">&quot;cites:W2755950973&quot;</span>,</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a> <span class="at">date_from =</span> <span class="st">&quot;2022-01-01&quot;</span>,</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a> <span class="at">date_to =</span> <span class="st">&quot;2022-03-31&quot;</span>,</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a> <span class="at">sort=</span><span class="cn">NULL</span>)</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>res1 <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> query1,</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">total.count =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<p>This query will return a collection of:</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(res1<span class="sc">$</span>count, <span class="st">&quot;publications&quot;</span>)</span></code></pre></div>
+<pre><code>## 166 publications</code></pre>
+<p>Let’s to download it:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>res1 <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> query1,</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total.count =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<p>And then to convert it into a data frame:</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res1, <span class="at">entity =</span> <span class="st">&quot;works&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 166
+## Columns: 25
+## $ id            &lt;chr&gt; &quot;https://openalex.org/W4220662981&quot;, &quot;https://openalex.or…
+## $ TI            &lt;chr&gt; &quot;Bibliometric Analysis of Multi-Level Perspective on Sus…
+## $ author        &lt;list&gt; [&lt;data.frame[5 x 10]&gt;], [&lt;data.frame[3 x 10]&gt;], [&lt;data.…
+## $ AB            &lt;chr&gt; &quot;The multi-level perspective (MLP) is a prominent framew…
+## $ pubdata       &lt;chr&gt; &quot;2022-03-31&quot;, &quot;2022-03-31&quot;, &quot;2022-03-31&quot;, &quot;2022-03-29&quot;, …
+## $ SO            &lt;chr&gt; &quot;Sustainability&quot;, &quot;European Journal of Innovation Manage…
+## $ SO_ID         &lt;chr&gt; &quot;https://openalex.org/V10134376&quot;, &quot;https://openalex.org/…
+## $ PU            &lt;chr&gt; &quot;MDPI AG&quot;, &quot;Emerald (MCB UP)&quot;, &quot;MDPI AG&quot;, &quot;Emerald (MCB …
+## $ IS            &lt;list&gt; &quot;2071-1050&quot;, &lt;&quot;1460-1060&quot;, &quot;1758-7115&quot;&gt;, &lt;&quot;1661-7827&quot;, …
+## $ URL           &lt;chr&gt; &quot;https://doi.org/10.3390/su14074145&quot;, &quot;https://doi.org/1…
+## $ first_page    &lt;chr&gt; &quot;4145&quot;, NA, &quot;4165&quot;, NA, NA, &quot;1073&quot;, &quot;1082&quot;, NA, NA, NA, …
+## $ last_page     &lt;chr&gt; &quot;4145&quot;, NA, &quot;4165&quot;, NA, NA, &quot;1073&quot;, &quot;1082&quot;, NA, NA, NA, …
+## $ volume        &lt;chr&gt; &quot;14&quot;, NA, &quot;19&quot;, NA, &quot;9&quot;, &quot;14&quot;, &quot;14&quot;, NA, NA, NA, &quot;14&quot;, &quot;…
+## $ issue         &lt;chr&gt; &quot;7&quot;, NA, &quot;7&quot;, NA, NA, &quot;7&quot;, &quot;7&quot;, NA, NA, NA, &quot;7&quot;, &quot;4&quot;, NA…
+## $ OA            &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, …
+## $ TC            &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ TCperYear     &lt;list&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ PY            &lt;int&gt; 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 20…
+## $ cited_by_url  &lt;chr&gt; &quot;https://api.openalex.org/works?filter=cites:W4220662981…
+## $ ids           &lt;list&gt; [[&lt;data.frame[2 x 2]&gt;]], [[&lt;data.frame[2 x 2]&gt;]], [[&lt;da…
+## $ DI            &lt;chr&gt; &quot;https://doi.org/10.3390/su14074145&quot;, &quot;https://doi.org/1…
+## $ DT            &lt;chr&gt; &quot;journal-article&quot;, &quot;journal-article&quot;, &quot;journal-article&quot;,…
+## $ CR            &lt;list&gt; &lt;&quot;https://openalex.org/W1902979073&quot;, &quot;https://openalex.…
+## $ related_works &lt;list&gt; &lt;&quot;https://openalex.org/W2578464&quot;, &quot;https://openalex.org…
+## $ concept       &lt;list&gt; &lt;NULL&gt;, &lt;NULL&gt;, &lt;NULL&gt;, &lt;NULL&gt;, &lt;NULL&gt;, &lt;NULL&gt;, &lt;NULL&gt;,…</code></pre>
+<p> </p>
+</div>
+<div id="get-all-authors-matching-a-set-of-filters" class="section level3">
+<h3>Get all authors matching a set of filters</h3>
+<p>We want download all authors’ records of scholars who work at the
+University of Naples Federico II (OpenAlex ID: I71267560) and who have
+published more than 499 works:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>query_author <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">identifier =</span> <span class="cn">NULL</span>,</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">entity =</span> <span class="st">&quot;authors&quot;</span>,</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">filter =</span> <span class="st">&quot;last_known_institution.id:I71267560,works_count:&gt;499&quot;</span>)</span></code></pre></div>
+<p>We check how many records match the query:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(<span class="at">query_url =</span> query_author,</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">total.count =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">verbose=</span><span class="cn">FALSE</span>)</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>res<span class="sc">$</span>count</span></code></pre></div>
+<pre><code>## [1] 34</code></pre>
+<p>Then we download and convert the collection:</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(<span class="at">query_url =</span> query_author,</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">total.count =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">verbose=</span><span class="cn">FALSE</span>)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res, <span class="at">entity =</span> <span class="st">&quot;authors&quot;</span>)</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 34
+## Columns: 15
+## $ id                  &lt;chr&gt; &quot;https://openalex.org/A2061787601&quot;, &quot;https://opena…
+## $ name                &lt;chr&gt; &quot;Luca Lista&quot;, &quot;Crisostomo Sciacca&quot;, &quot;Alberto Alois…
+## $ name_alternatives   &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ ids                 &lt;list&gt; [&lt;data.frame[3 x 2]&gt;], [&lt;data.frame[3 x 2]&gt;], [&lt;d…
+## $ orcid               &lt;chr&gt; &quot;https://orcid.org/0000-0001-6471-5492&quot;, &quot;https://…
+## $ works_count         &lt;int&gt; 2538, 2231, 1506, 1165, 1119, 1058, 1025, 995, 965…
+## $ TC                  &lt;int&gt; 98229, 61137, 77280, 66456, 46373, 34778, 27289, 3…
+## $ TCperYear           &lt;list&gt; [&lt;data.frame[11 x 3]&gt;], [&lt;data.frame[11 x 3]&gt;], […
+## $ affiliation_name    &lt;chr&gt; &quot;University of Naples Federico II&quot;, &quot;University of…
+## $ affiliation_id      &lt;chr&gt; &quot;https://openalex.org/I71267560&quot;, &quot;https://openale…
+## $ affiliation_ror     &lt;chr&gt; &quot;https://ror.org/05290cv24&quot;, &quot;https://ror.org/0529…
+## $ affiliation_country &lt;chr&gt; &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;I…
+## $ affiliation_type    &lt;chr&gt; &quot;education&quot;, &quot;education&quot;, &quot;education&quot;, &quot;education&quot;…
+## $ concept             &lt;list&gt; [&lt;data.frame[25 x 5]&gt;], [&lt;data.frame[20 x 5]&gt;], […
+## $ works_api_url       &lt;chr&gt; &quot;https://api.openalex.org/works?filter=author.id:A…</code></pre>
+<p> </p>
+</div>
+<div id="get-all-institutions-matching-a-set-of-filters" class="section level3">
+<h3>Get all institutions matching a set of filters</h3>
+<p>We want download all records regarding Italian institutions
+(country_code:it) that are classified as educational
+(type:education):</p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>query_inst <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">entity =</span> <span class="st">&quot;institutions&quot;</span>,</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">filter =</span> <span class="st">&quot;country_code:it,type:education&quot;</span>)</span></code></pre></div>
+<p>We check how many records match the query:</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(<span class="at">query_url =</span> query_inst,</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">total.count =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">verbose=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Requesting url: https://api.openalex.org/institutions?filter=country_code%3Ait%2Ctype%3Aeducation&amp;per-page=200</code></pre>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>res<span class="sc">$</span>count</span></code></pre></div>
+<pre><code>## [1] 231</code></pre>
+<p>Then we download and convert the collection:</p>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(<span class="at">query_url =</span> query_inst,</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">total.count =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">verbose=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Requesting url: https://api.openalex.org/institutions?filter=country_code%3Ait%2Ctype%3Aeducation&amp;per-page=200</code></pre>
+<pre><code>## About to get a total of 2 pages of results with a total of 231 records.</code></pre>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res, <span class="at">entity =</span> <span class="st">&quot;institutions&quot;</span>)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 231
+## Columns: 19
+## $ id                 &lt;chr&gt; &quot;https://openalex.org/I861853513&quot;, &quot;https://openale…
+## $ name               &lt;chr&gt; &quot;Sapienza University of Rome&quot;, &quot;University of Milan…
+## $ name_alternatives  &lt;list&gt; &quot;Università degli Studi di Roma \&quot;La Sapienza\&quot;&quot;, …
+## $ name_acronyms      &lt;list&gt; NA, &quot;UNIMI&quot;, &quot;UNIBO&quot;, &quot;UNIPD&quot;, NA, &quot;UNITO&quot;, &quot;UniPi…
+## $ name_international &lt;list&gt; [&lt;data.frame[1 x 84]&gt;], [&lt;data.frame[1 x 59]&gt;], [&lt;…
+## $ ror                &lt;chr&gt; &quot;https://ror.org/02be6w209&quot;, &quot;https://ror.org/00wjc…
+## $ ids                &lt;list&gt; [&lt;data.frame[6 x 2]&gt;], [&lt;data.frame[6 x 2]&gt;], [&lt;da…
+## $ country            &lt;chr&gt; &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT&quot;, &quot;IT…
+## $ geo                &lt;list&gt; [&lt;data.frame[1 x 7]&gt;], [&lt;data.frame[1 x 7]&gt;], [&lt;da…
+## $ type               &lt;chr&gt; &quot;education&quot;, &quot;education&quot;, &quot;education&quot;, &quot;education&quot;,…
+## $ homepage           &lt;chr&gt; &quot;http://www.uniroma1.it/&quot;, &quot;http://www.unimi.it/ENG…
+## $ image              &lt;chr&gt; &quot;https://upload.wikimedia.org/wikipedia/en/4/45/Sap…
+## $ thumbnail          &lt;chr&gt; &quot;https://upload.wikimedia.org/wikipedia/en/thumb/4/…
+## $ associated_inst    &lt;list&gt; [&lt;data.frame[1 x 24]&gt;], [&lt;data.frame[1 x 12]&gt;], [&lt;…
+## $ works_count        &lt;int&gt; 171175, 156354, 127512, 124963, 87765, 87187, 79087…
+## $ TC                 &lt;int&gt; 12417861, 12196097, 10647850, 10229005, 6125697, 72…
+## $ TCperYear          &lt;list&gt; [&lt;data.frame[11 x 3]&gt;], [&lt;data.frame[11 x 3]&gt;], [&lt;…
+## $ concept            &lt;list&gt; [&lt;data.frame[13 x 5]&gt;], [&lt;data.frame[10 x 5]&gt;], [&lt;…
+## $ works_api_url      &lt;chr&gt; &quot;https://api.openalex.org/works?filter=institutions…</code></pre>
+<p> </p>
+</div>
+<div id="get-all-venues-matching-a-set-of-filters" class="section level3">
+<h3>Get all venues matching a set of filters</h3>
+<p>We want download all records regarding journals that have published
+more than 100,000 works:</p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>query_venue <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">entity =</span> <span class="st">&quot;venues&quot;</span>,</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">filter =</span> <span class="st">&quot;works_count:&gt;100000&quot;</span>)</span></code></pre></div>
+<p>We check how many records match the query:</p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(<span class="at">query_url =</span> query_venue,</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">total.count =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">verbose=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Requesting url: https://api.openalex.org/venues?filter=works_count%3A%3E100000&amp;per-page=200</code></pre>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>res<span class="sc">$</span>count</span></code></pre></div>
+<pre><code>## [1] 41</code></pre>
+<p>Then we download and convert the collection:</p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(<span class="at">query_url =</span> query_venue,</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">total.count =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">verbose=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Requesting url: https://api.openalex.org/venues?filter=works_count%3A%3E100000&amp;per-page=200</code></pre>
+<pre><code>## About to get a total of 1 pages of results with a total of 41 records.</code></pre>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res, <span class="at">entity=</span><span class="st">&quot;venues&quot;</span>)</span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 41
+## Columns: 14
+## $ id            &lt;chr&gt; &quot;https://openalex.org/V2751751161&quot;, &quot;https://openalex.or…
+## $ name          &lt;chr&gt; &quot;Social Science Research Network&quot;, &quot;Research Papers in E…
+## $ publisher     &lt;chr&gt; NA, NA, &quot;Wiley&quot;, NA, &quot;BMJ&quot;, &quot;Public Library of Science&quot;,…
+## $ issn          &lt;list&gt; NA, NA, &lt;&quot;1431-5890&quot;, &quot;0931-7597&quot;, &quot;1522-2667&quot;&gt;, &lt;&quot;1611…
+## $ issn_l        &lt;list&gt; NA, NA, &quot;0931-7597&quot;, &quot;0302-9743&quot;, &quot;0959-8138&quot;, &quot;1932-62…
+## $ is_oa         &lt;lgl&gt; NA, NA, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, NA, FAL…
+## $ is_in_doaj    &lt;lgl&gt; NA, NA, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, NA, FAL…
+## $ ids           &lt;list&gt; [&lt;data.frame[2 x 2]&gt;], [&lt;data.frame[2 x 2]&gt;], [&lt;data.fr…
+## $ homepage      &lt;chr&gt; &quot;http://www.ssrn.com/&quot;, &quot;http://www.repec.org/&quot;, NA, &quot;ht…
+## $ works_count   &lt;int&gt; 876560, 791035, 728300, 493532, 301955, 282522, 272575, …
+## $ TC            &lt;int&gt; 3236982, 2932956, 252130, 5742566, 3517969, 6594797, 190…
+## $ TCperYear     &lt;list&gt; [&lt;data.frame[11 x 3]&gt;], [&lt;data.frame[11 x 3]&gt;], [&lt;data.…
+## $ concept       &lt;list&gt; [&lt;data.frame[10 x 5]&gt;], [&lt;data.frame[11 x 5]&gt;], [&lt;data.…
+## $ works_api_url &lt;chr&gt; &quot;https://api.openalex.org/works?filter=host_venue.id:V27…</code></pre>
+<p> </p>
+</div>
+<div id="get-all-concepts-matching-a-set-of-filters" class="section level3">
+<h3>Get all concepts matching a set of filters</h3>
+<p>We want to download the records of all the concepts that concern at
+least one million works:</p>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>query_concept <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">entity =</span> <span class="st">&quot;concepts&quot;</span>,</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">filter =</span> <span class="st">&quot;works_count:&gt;1000000&quot;</span>)</span></code></pre></div>
+<p>We check how many records match the query:</p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(<span class="at">query_url =</span> query_concept,</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">total.count =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">verbose=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Requesting url: https://api.openalex.org/concepts?filter=works_count%3A%3E1000000&amp;per-page=200</code></pre>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>res<span class="sc">$</span>count</span></code></pre></div>
+<pre><code>## [1] 113</code></pre>
+<p>Then we download and convert the collection:</p>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(<span class="at">query_url =</span> query_concept,</span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">total.count =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">verbose=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Requesting url: https://api.openalex.org/concepts?filter=works_count%3A%3E1000000&amp;per-page=200</code></pre>
+<pre><code>## About to get a total of 1 pages of results with a total of 113 records.</code></pre>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res, <span class="at">entity=</span><span class="st">&quot;concepts&quot;</span>)</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div>
+<pre><code>## Rows: 113
+## Columns: 16
+## $ id                        &lt;chr&gt; &quot;https://openalex.org/C71924100&quot;, &quot;https://o…
+## $ name                      &lt;chr&gt; &quot;Medicine&quot;, &quot;Computer science&quot;, &quot;Chemistry&quot;,…
+## $ name_international        &lt;list&gt; [&lt;data.frame[1 x 193]&gt;], [&lt;data.frame[1 x 1…
+## $ description               &lt;chr&gt; &quot;field of study for diagnosing, treating and…
+## $ description_international &lt;list&gt; [&lt;data.frame[1 x 44]&gt;], [&lt;data.frame[1 x 38…
+## $ wikidata                  &lt;chr&gt; &quot;https://www.wikidata.org/wiki/Q11190&quot;, &quot;htt…
+## $ level                     &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,…
+## $ ids                       &lt;list&gt; [&lt;data.frame[5 x 2]&gt;], [&lt;data.frame[5 x 2]&gt;…
+## $ image                     &lt;chr&gt; &quot;https://upload.wikimedia.org/wikipedia/comm…
+## $ thumbnail                 &lt;chr&gt; &quot;https://upload.wikimedia.org/wikipedia/comm…
+## $ ancestors                 &lt;list&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, [&lt;data.…
+## $ rel_concepts              &lt;list&gt; [&lt;data.frame[51 x 5]&gt;], [&lt;data.frame[93 x 5…
+## $ works_count               &lt;int&gt; 38700520, 27478212, 20964374, 18895013, 1845…
+## $ TC                        &lt;int&gt; 428237996, 231013792, 361737994, 49760576, 2…
+## $ TCperYear                 &lt;list&gt; [&lt;data.frame[11 x 3]&gt;], [&lt;data.frame[11 x 3…
+## $ works_api_url             &lt;chr&gt; &quot;https://api.openalex.org/works?filter=conce…</code></pre>
+</div>
+</div>
+<div id="convert-an-openalex-data-frame-to-a-bibliometrix-object" class="section level2">
+<h2>Convert an OpenAlex data frame to a bibliometrix object</h2>
+<p>The bibliometrix R-package (<a href="https://www.bibliometrix.org" class="uri">https://www.bibliometrix.org</a>) provides a set of tools
+for quantitative research in bibliometrics and scientometrics. It is
+written in the R language, which is an open-source environment and
+ecosystem.</p>
+<p>Today it represents one of the most used science mapping software in
+the world. In a recent survey on bibliometric analysis tools,
+Moral-Muñoz et al. (2020) wrote: “At this moment, maybe Bibliometrix and
+its Shiny platform contain the more extensive set of techniques
+implemented, and together with the easiness of its interface, could be a
+great software for practitioners”.</p>
+<p>The function <strong>oa2bibliometrix</strong> converts a
+bibliographic data frame of works into a bibliometrix object. This
+object can be used as input collection of a science mapping
+workflow.</p>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>query1 <span class="ot">&lt;-</span> <span class="fu">oaQueryBuild</span>(</span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a> <span class="at">identifier=</span><span class="cn">NULL</span>,</span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a> <span class="at">entity =</span> <span class="st">&quot;works&quot;</span>,</span>
+<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a> <span class="at">filter =</span> <span class="st">&quot;cites:W2755950973&quot;</span>,</span>
+<span id="cb79-5"><a href="#cb79-5" aria-hidden="true" tabindex="-1"></a> <span class="at">date_from =</span> <span class="st">&quot;2022-01-01&quot;</span>,</span>
+<span id="cb79-6"><a href="#cb79-6" aria-hidden="true" tabindex="-1"></a> <span class="at">date_to =</span> <span class="st">&quot;2022-03-31&quot;</span>,</span>
+<span id="cb79-7"><a href="#cb79-7" aria-hidden="true" tabindex="-1"></a> <span class="at">sort=</span><span class="cn">NULL</span>)</span>
+<span id="cb79-8"><a href="#cb79-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb79-9"><a href="#cb79-9" aria-hidden="true" tabindex="-1"></a>res1 <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(</span>
+<span id="cb79-10"><a href="#cb79-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> query1,</span>
+<span id="cb79-11"><a href="#cb79-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">total.count =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb79-12"><a href="#cb79-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb79-13"><a href="#cb79-13" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<p>This query will return a collection of:</p>
+<div class="sourceCode" id="cb80"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(res1<span class="sc">$</span>count, <span class="st">&quot;publications&quot;</span>)</span></code></pre></div>
+<pre><code>## 166 publications</code></pre>
+<p>Let’s to download it:</p>
+<div class="sourceCode" id="cb82"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>res1 <span class="ot">&lt;-</span> <span class="fu">oaApiRequest</span>(</span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">query_url =</span> query1,</span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total.count =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<p>Convert it into a data frame:</p>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">oa2df</span>(res1, <span class="at">entity =</span> <span class="st">&quot;works&quot;</span>)</span></code></pre></div>
+<p>and then into a bibliometrix object:</p>
+<div class="sourceCode" id="cb84"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">oa2bibliometrix</span>(df)</span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(M)</span></code></pre></div>
+<pre><code>## Rows: 166
+## Columns: 37
+## $ AU            &lt;chr&gt; &quot;CHENG WANG;TAO LV;RONGJIANG CAI;JIANFENG XU;LIYA WANG&quot;,…
+## $ RP            &lt;chr&gt; &quot;SCHOOL OF ECONOMICS AND MANAGEMENT, CHINA UNIVERSITY OF…
+## $ C1            &lt;chr&gt; &quot;SCHOOL OF ECONOMICS AND MANAGEMENT, CHINA UNIVERSITY OF…
+## $ AU_UN         &lt;chr&gt; &quot;CHINA UNIVERSITY OF MINING AND TECHNOLOGY;CHINA UNIVERS…
+## $ AU_CO         &lt;chr&gt; &quot;CHINA;CHINA;CHINA;CHINA;NA&quot;, &quot;ITALY;NA;NA&quot;, &quot;SOUTH KORE…
+## $ ID            &lt;chr&gt; &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, …
+## $ id_url        &lt;chr&gt; &quot;https://openalex.org/W4220662981&quot;, &quot;https://openalex.or…
+## $ TI            &lt;chr&gt; &quot;BIBLIOMETRIC ANALYSIS OF MULTI-LEVEL PERSPECTIVE ON SUS…
+## $ author        &lt;list&gt; [&lt;data.frame[5 x 10]&gt;], [&lt;data.frame[3 x 10]&gt;], [&lt;data.…
+## $ AB            &lt;chr&gt; &quot;THE MULTI-LEVEL PERSPECTIVE (MLP) IS A PROMINENT FRAMEW…
+## $ pubdata       &lt;chr&gt; &quot;2022-03-31&quot;, &quot;2022-03-31&quot;, &quot;2022-03-31&quot;, &quot;2022-03-29&quot;, …
+## $ SO            &lt;chr&gt; &quot;SUSTAINABILITY&quot;, &quot;EUROPEAN JOURNAL OF INNOVATION MANAGE…
+## $ SO_ID         &lt;chr&gt; &quot;https://openalex.org/V10134376&quot;, &quot;https://openalex.org/…
+## $ PU            &lt;chr&gt; &quot;MDPI AG&quot;, &quot;Emerald (MCB UP)&quot;, &quot;MDPI AG&quot;, &quot;Emerald (MCB …
+## $ IS            &lt;list&gt; &quot;2071-1050&quot;, &lt;&quot;1460-1060&quot;, &quot;1758-7115&quot;&gt;, &lt;&quot;1661-7827&quot;, …
+## $ URL           &lt;chr&gt; &quot;https://doi.org/10.3390/su14074145&quot;, &quot;https://doi.org/1…
+## $ first_page    &lt;chr&gt; &quot;4145&quot;, NA, &quot;4165&quot;, NA, NA, &quot;1073&quot;, &quot;1082&quot;, NA, NA, NA, …
+## $ last_page     &lt;chr&gt; &quot;4145&quot;, NA, &quot;4165&quot;, NA, NA, &quot;1073&quot;, &quot;1082&quot;, NA, NA, NA, …
+## $ volume        &lt;chr&gt; &quot;14&quot;, NA, &quot;19&quot;, NA, &quot;9&quot;, &quot;14&quot;, &quot;14&quot;, NA, NA, NA, &quot;14&quot;, &quot;…
+## $ issue         &lt;chr&gt; &quot;7&quot;, NA, &quot;7&quot;, NA, NA, &quot;7&quot;, &quot;7&quot;, NA, NA, NA, &quot;7&quot;, &quot;4&quot;, NA…
+## $ OA            &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, …
+## $ TC            &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ TCperYear     &lt;list&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ PY            &lt;int&gt; 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 20…
+## $ cited_by_url  &lt;chr&gt; &quot;https://api.openalex.org/works?filter=cites:W4220662981…
+## $ ids           &lt;list&gt; [[&lt;data.frame[2 x 2]&gt;]], [[&lt;data.frame[2 x 2]&gt;]], [[&lt;da…
+## $ DI            &lt;chr&gt; &quot;https://doi.org/10.3390/su14074145&quot;, &quot;https://doi.org/1…
+## $ DT            &lt;chr&gt; &quot;JOURNAL-ARTICLE&quot;, &quot;JOURNAL-ARTICLE&quot;, &quot;JOURNAL-ARTICLE&quot;,…
+## $ CR            &lt;chr&gt; &quot;https://openalex.org/W1902979073;https://openalex.org/W…
+## $ related_works &lt;list&gt; &lt;&quot;https://openalex.org/W2578464&quot;, &quot;https://openalex.org…
+## $ concept       &lt;list&gt; &lt;NULL&gt;, &lt;NULL&gt;, &lt;NULL&gt;, &lt;NULL&gt;, &lt;NULL&gt;, &lt;NULL&gt;, &lt;NULL&gt;,…
+## $ id_oa         &lt;chr&gt; &quot;W4220662981&quot;, &quot;W4220731660&quot;, &quot;W4220971062&quot;, &quot;W422071230…
+## $ DB            &lt;chr&gt; &quot;openalex&quot;, &quot;openalex&quot;, &quot;openalex&quot;, &quot;openalex&quot;, &quot;openale…
+## $ JI            &lt;chr&gt; &quot;V10134376&quot;, &quot;V90149737&quot;, &quot;V15239247&quot;, &quot;V20489460&quot;, &quot;V25…
+## $ J9            &lt;chr&gt; &quot;V10134376&quot;, &quot;V90149737&quot;, &quot;V15239247&quot;, &quot;V20489460&quot;, &quot;V25…
+## $ SR_FULL       &lt;chr&gt; &quot;CHENG WANG, 2022, V10134376&quot;, &quot;GIANLUCA ELIA, 2022, V90…
+## $ SR            &lt;chr&gt; &quot;CHENG WANG, 2022, V10134376&quot;, &quot;GIANLUCA ELIA, 2022, V90…</code></pre>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
