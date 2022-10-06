@@ -1,1001 +1,728 @@
-openalexR
-====================================
 
-# An R-package to gather bibliographic data from OpenAlex. 
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 
-&nbsp;
+# openalexR <img src="man/figures/logo.png" align="right" height="139"/>
 
-    The goal of openalexR is to gather bibliographic metadata about publications, 
-    authors, venues, institutions and concepts from OpenAlex using API.
-    
-OpenAlex is a fully open catalog of the global research system. It's named after the ancient Library of Alexandria.
-The OpenAlex dataset describes scholarly entities and how those entities are connected to each other. There are five types of entities:
+<!-- badges: start -->
 
-* **Works** are papers, books, datasets, etc; they cite other works
+[![R-CMD-check](https://github.com/massimoaria/openalexR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/massimoaria/openalexR/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
 
-* **Authors** are people who create works
+**openalexR** helps you interface with the
+[OpenAlex](https://openalex.org) API to retrieve bibliographic
+infomation about publications, authors, venues, institutions and
+concepts with 4 main functions:
 
-* **Venues** are journals and repositories that host works
+-   `oa_query()`: generates a valid query, written following the
+    OpenAlex API syntax, from a set of arguments provided by the user.
 
-* **Institutions** are universities and other orgs that are affiliated with works (via authors)
+-   `oa_request()`: downloads a collection of entities matching the
+    query created by `oa_query()` or manually written by the user, and
+    returns a JSON object in a list format.
 
-* **Concepts** *tag* Works with a topic
+-   `oa2df()`: converts the JSON object in classical bibliographic
+    tibble/data frame.
 
-(source:  [OpenAlex website](https://openalex.org))
+-   `oa_fetch()`: composes three functions above so the user can execute
+    everything in one step, *i.e.*, `oa_query |> oa_request |> oa2df`
 
-&nbsp; 
+-   `oa_random()`: to get random entity, e.g., `oa_random("works")`
+    gives a different work each time you run it
 
 ## Installation
 
-You can install the developer version of the openalexR from [GitHub](https://github.com) with:
+You can install the developer version of the openalexR from
+[GitHub](https://github.com) with:
 
-    install.packages("devtools")
-    devtools::install_github("massimoaria/openalexR")
+``` r
+install.packages("remotes")
+remotes::install_github("massimoaria/openalexR")
+```
 
+You can install the released version of openalexR from
+[CRAN](https://CRAN.R-project.org) with:
 
+``` r
+install.packages("openalexR")
+```
 
-You can install the released version of openalexR from [CRAN](https://CRAN.R-project.org) with:
+Before we go any further, we highly recommend you set `openalexR.mailto`
+option so that your requests go to [the polite
+pool](https://docs.openalex.org/api#the-polite-pool) for faster response
+times:
 
+``` r
+options(openalexR.mailto = "example@email.com")
+```
 
-    install.packages("openalexR")
-
-&nbsp; 
+Bonus point if you put this in your `.Rprofile` with
+`usethis::edit_r_profile()`.
 
 ## Package loading
 
-```{r}
-   library(openalexR)
+``` r
+library(openalexR)
+library(dplyr)
 ```
 
-   
+## Works (think papers, publications)
 
-&nbsp; 
-
-&nbsp; 
-
-
-# openalexR overview
-
-The basic idea of openalexR is to provide three main functions helping the user to:
-
-* Create a query by passing one or more arguments to a function (function **oaQueryBuild**)
-
-* Gather a collection of entities in JSON format (function **oaApiRequest**)
-
-* Transform the JSON in a data frame (similar to an excel sheet) can be used as input in a bibliometric or science mapping analysis (e.g. using the bibliometrix package) (function **oa2df**)
-
-&nbsp;
-
-OpenAlex defined a custom query language based on entity type. You can choose to write a valid query using that language or, in alternative, using the function **oaQueryBuild**.
-
-**oaQueryBuild** generates a valid query, written following the OpenAlex API language, from a set of arguments provided by the user.
-
-The function **oaApiRequest** downloads a collection of entities matching the query created by **oaQueryBuild** or manually written by the user. The function will return a JSON object in a list format.
-
-Finally, the function **oa2df** converts  the JSON object in classical bibliographic data frame.
-
-
-&nbsp; 
-
-## Get full records through entity IDs.
-
-&nbsp; 
-
-### Query to obtain all information about a single publications
-
-The following paper:
+This paper:
 
     Aria, M., & Cuccurullo, C. (2017). bibliometrix: 
     An R-tool for comprehensive science mapping analysis. 
     Journal of informetrics, 11(4), 959-975.
 
-is associated to the OpenAlex-id **W2755950973**.
+is associated to the
+[OpenAlex-id](https://docs.openalex.org/about-the-data#the-openalex-id)
+**W2755950973**. If you know your paper’s OpenAlex ID, all you need to
+do is passing `identifier = <openalex id>` as an argument in
+`oa_fetch()`:
 
-In this example, we need to pass a single argument to the function, that is, the identifier of the entity to download: identifier = "W2755950973".
-
-```{r}
-query_work <- oaQueryBuild(
+``` r
+paper_id <- oa_fetch(
   identifier = "W2755950973",
-  entity = "works"
-  )
-
-cat(query_work)
-
-## https://api.openalex.org/works/W2755950973
+  entity = "works",
+  verbose = TRUE
+)
+#> [1] "https://api.openalex.org/works/W2755950973"
+#> Requesting url: https://api.openalex.org/works/W2755950973
+dplyr::glimpse(paper_id)
+#> Rows: 1
+#> Columns: 26
+#> $ id               <chr> "https://openalex.org/W2755950973"
+#> $ display_name     <chr> "bibliometrix : An R-tool for comprehensive science m…
+#> $ author           <list> [<data.frame[2 x 10]>]
+#> $ ab               <chr> "Abstract The use of bibliometrics is gradually exten…
+#> $ publication_date <chr> "2017-11-01"
+#> $ relevance_score  <lgl> NA
+#> $ so               <chr> "Journal of Informetrics"
+#> $ so_id            <chr> "https://openalex.org/V205292342"
+#> $ publisher        <chr> "Elsevier"
+#> $ issn             <list> <"1875-5879", "1751-1577">
+#> $ url              <chr> "https://doi.org/10.1016/j.joi.2017.08.007"
+#> $ first_page       <chr> "959"
+#> $ last_page        <chr> "975"
+#> $ volume           <chr> "11"
+#> $ issue            <chr> "4"
+#> $ is_oa            <lgl> FALSE
+#> $ cited_by_count   <int> 1516
+#> $ counts_by_year   <list> [<data.frame[6 x 2]>]
+#> $ publication_year <int> 2017
+#> $ cited_by_api_url <chr> "https://api.openalex.org/works?filter=cites:W275595…
+#> $ ids              <list> [<tbl_df[3 x 2]>]
+#> $ doi              <chr> "https://doi.org/10.1016/j.joi.2017.08.007"
+#> $ type             <chr> "journal-article"
+#> $ referenced_works <list> <"https://openalex.org/W767067438", "https://openalex…
+#> $ related_works    <list> <"https://openalex.org/W2086064646", "https://openale…
+#> $ concepts         <list> [<data.frame[3 x 5]>]
 ```
 
+`oa_fetch()` is a composition of functions:
+`oa_query |> oa_request |> oa2df`. As results, `oa_query()` returns the
+query string including the OpenAlex endpoint API server address
+(default). `oa_request()` downloads the bibliographic records matching
+the query. Finally, `oa2df()` converts the final result list to a
+tibble. The final result is a complicated tibble, but we can use
+`show_works()` to display a simplified version:
 
-As results, **oaQueryBuild** returns the query string including the OpenAlex endpoint API server address. You should change it by using the argument "endpoint = *address*"
-
-The function **oaApiRequest** downloads the bibliographic records matching the query.
-
-
-```{r}
- res <- oaApiRequest(
-    query_url = query_work
-    )
+``` r
+paper_id %>% 
+  show_works() %>%
+  knitr::kable()
 ```
 
-```{r}
-df <- oa2df(res, entity = "works")
+| short_id    | display_name                                                        | first_author | last_author        | so                      | url                                         | is_oa | top_concepts                                          |
+|:------------|:--------------------------------------------------------------------|:-------------|:-------------------|:------------------------|:--------------------------------------------|:------|:------------------------------------------------------|
+| W2755950973 | bibliometrix : An R-tool for comprehensive science mapping analysis | Massimo Aria | Corrado Cuccurullo | Journal of Informetrics | <https://doi.org/10.1016/j.joi.2017.08.007> | FALSE | Computer science, Data science, Information retrieval |
 
-dplyr::glimpse(df)
+### External id formats
 
-# Rows: 1
-# Columns: 22
-# $ id            <chr> "https://openalex.org/W2755950973"
-# $ TI            <chr> "bibliometrix: An R-tool for comprehensive science mapping analysis"
-# $ author        <list> [<data.frame[2 x 10]>]
-# $ AB            <chr> ""
-# $ pubdata       <chr> "2017-11-01"
-# $ relscore      <dbl> 15.8851
-# $ SO            <chr> "Journal of Informetrics"
-# $ SO_ID         <chr> "https://openalex.org/V205292342"
-# $ PU            <chr> "Elsevier"
-# $ IS            <list> <"1875-5879", "1751-1577">
-# $ URL           <chr> "https://doi.org/10.1016/j.joi.2017.08.007"
-# $ OA            <lgl> FALSE
-# $ TC            <int> 1120
-# $ TCperYear     <lgl> NA
-# $ PY            <int> 2017
-# $ cited_by_url  <chr> "https://api.openalex.org/works?filter=cites:W2755950973"
-# $ ids           <list> [[<data.frame[4 x 2]>]]
-# $ DI            <chr> "https://doi.org/10.1016/j.joi.2017.08.007"
-# $ DT            <chr> "journal-article"
-# $ CR            <list> <"https://openalex.org/W192816456", "https://openalex.org/W2132948308", "https://openalex.org/W349374990", "https://openalex.org/W767067438", "https://openalex.org/W2002117998", "https://openalex.org/W2034800299", "https://o…
-# $ related_works <list> <"https://openalex.org/W2408216567", "https://openalex.org/W3125505924", "https://openalex.org/W2150220236", "https://openalex.org/W3125707221", "https://openalex.org/W2135455887", "https://openalex.org/W2128438887", "https:…
-# $ concept       <list> [<data.frame[4 x 5]>]
-```
+OpenAlex endpoint accepts OpenAlex IDs and other [external
+IDs](https://docs.openalex.org/api/get-single-entities#id-formats)
+(*e.g.*, DOI, ISSN) in several formats, including Digital Object
+Identifier (DOI) and Persistent Identifiers (PIDs).
 
-&nbsp; 
-
-### Query to obtain all information about a single publications using external id formats
-
-OpenAlex endpoint accepts an OpenAlex ID, but many external IDs (eg DOI, ISSN) are accepted as well, in several formats.
-
-
-**DOI (Digital Object Identifier)**
-
-We can get a publication record through its DOI using the format **doi:***doi identifier*. Example:
-```{r}
-query_work <- oaQueryBuild(
+``` r
+oa_fetch(
+  # identifier = "https://doi.org/10.1016/j.joi.2017.08.007", # would also work (PIDs)
   identifier = "doi:10.1016/j.joi.2017.08.007",
   entity = "works"
-  )
-
-cat(query_work)
-
-## https://api.openalex.org/works/doi:https://doi.org/10.1016/j.joi.2017.08.007
+) %>% 
+  show_works() %>%
+  knitr::kable()
 ```
 
-```{r}
- res <- oaApiRequest(
-    query_url = query_work
-    )
+| short_id    | display_name                                                        | first_author | last_author        | so                      | url                                         | is_oa | top_concepts                                          |
+|:------------|:--------------------------------------------------------------------|:-------------|:-------------------|:------------------------|:--------------------------------------------|:------|:------------------------------------------------------|
+| W2755950973 | bibliometrix : An R-tool for comprehensive science mapping analysis | Massimo Aria | Corrado Cuccurullo | Journal of Informetrics | <https://doi.org/10.1016/j.joi.2017.08.007> | FALSE | Computer science, Data science, Information retrieval |
+
+### More than one publications/authors
+
+[https://api.openalex.org/authors/https://orcid.org/](https://api.openalex.org/authors/https://orcid.org/0000-0003-1613-5981)
+
+If you know the OpenAlex IDs of these entities, you can also feed them
+into the `identifier` argument.
+
+``` r
+oa_fetch(
+  identifier = c("W2741809807", "W2755950973"),
+  # identifier = c("https://doi.org/10.1016/j.joi.2017.08.007", "https://doi.org/10.1016/j.joi.2017.08.007"), # TODO
+  entity = "works",
+  verbose = TRUE
+) %>% 
+  show_works() %>%
+  knitr::kable()
+#> [1] "https://api.openalex.org/works?filter=openalex_id%3AW2741809807%7CW2755950973"
+#> Requesting url: https://api.openalex.org/works?filter=openalex_id%3AW2741809807%7CW2755950973
+#> About to get a total of 1 pages of results with a total of 2 records.
 ```
 
-```{r}
-df <- oa2df(res, entity = "works")
+| short_id    | display_name                                                                                 | first_author       | last_author        | so                      | url                                         | is_oa | top_concepts                                                                            |
+|:------------|:---------------------------------------------------------------------------------------------|:-------------------|:-------------------|:------------------------|:--------------------------------------------|:------|:----------------------------------------------------------------------------------------|
+| W2755950973 | bibliometrix : An R-tool for comprehensive science mapping analysis                          | Massimo Aria       | Corrado Cuccurullo | Journal of Informetrics | <https://doi.org/10.1016/j.joi.2017.08.007> | FALSE | Computer science, Data science, Information retrieval                                   |
+| W2741809807 | The state of OA: a large-scale analysis of the prevalence and impact of Open Access articles | Heather A. Piwowar | Stefanie Haustein  | PeerJ                   | <https://doi.org/10.7717/peerj.4375>        | TRUE  | Citation, License, Scholarly communication, Web of science, Bibliometrics, Open science |
 
-dplyr::glimpse(df)
+However, if you only know their external identifies, say, DOIs, you
+would need to use `doi` as a filter:
 
-# Rows: 1
-# Columns: 22
-# $ id            <chr> "https://openalex.org/W2755950973"
-# $ TI            <chr> "bibliometrix: An R-tool for comprehensive science mapping analysis"
-# $ author        <list> [<data.frame[2 x 10]>]
-# $ AB            <chr> ""
-# $ pubdata       <chr> "2017-11-01"
-# $ relscore      <dbl> 15.26293
-# $ SO            <chr> "Journal of Informetrics"
-# $ SO_ID         <chr> "https://openalex.org/V205292342"
-# $ PU            <chr> "Elsevier"
-# $ IS            <list> <"1875-5879", "1751-1577">
-# $ URL           <chr> "https://doi.org/10.1016/j.joi.2017.08.007"
-# $ OA            <lgl> FALSE
-# $ TC            <int> 1120
-# $ TCperYear     <lgl> NA
-# $ PY            <int> 2017
-# $ cited_by_url  <chr> "https://api.openalex.org/works?filter=cites:W2755950973"
-# $ ids           <list> [[<data.frame[4 x 2]>]]
-# $ DI            <chr> "https://doi.org/10.1016/j.joi.2017.08.007"
-# $ DT            <chr> "journal-article"
-# $ CR            <list> <"https://openalex.org/W192816456", "https://openalex.org/W2132948308", "…
-# $ related_works <list> <"https://openalex.org/W2408216567", "https://openalex.org/W3125505924", …
-# $ concept       <list> [<data.frame[4 x 5]>]
+``` r
+oa_fetch(
+  # identifier = c("W2741809807", "W2755950973"),
+  doi = c("10.1016/j.joi.2017.08.007", "https://doi.org/10.1093/bioinformatics/btab727"),
+  entity = "works",
+  verbose = TRUE
+) %>% 
+  show_works() %>%
+  knitr::kable()
+#> [1] "https://api.openalex.org/works?filter=doi%3A10.1016%2Fj.joi.2017.08.007%7Chttps%3A%2F%2Fdoi.org%2F10.1093%2Fbioinformatics%2Fbtab727"
+#> Requesting url: https://api.openalex.org/works?filter=doi%3A10.1016%2Fj.joi.2017.08.007%7Chttps%3A%2F%2Fdoi.org%2F10.1093%2Fbioinformatics%2Fbtab727
+#> About to get a total of 1 pages of results with a total of 2 records.
 ```
 
+| short_id    | display_name                                                                           | first_author     | last_author        | so                      | url                                              | is_oa | top_concepts                                                                                                |
+|:------------|:---------------------------------------------------------------------------------------|:-----------------|:-------------------|:------------------------|:-------------------------------------------------|:------|:------------------------------------------------------------------------------------------------------------|
+| W2755950973 | bibliometrix : An R-tool for comprehensive science mapping analysis                    | Massimo Aria     | Corrado Cuccurullo | Journal of Informetrics | <https://doi.org/10.1016/j.joi.2017.08.007>      | FALSE | Computer science, Data science, Information retrieval                                                       |
+| W3206431085 | PMLB v1.0: an open-source dataset collection for benchmarking machine learning methods | Joseph D. Romano | Jason H. Moore     | Bioinformatics          | <https://doi.org/10.1093/bioinformatics/btab727> | TRUE  | Benchmarking, Python (programming language), Computer science, Benchmark (surveying), Open source, Workflow |
 
+### Filters
 
-**Persistent Identifiers (PIDs)**
+In most cases, we are interested in downloading a collection of items
+that meet one or more inclusion/exclusion criteria (filters). Supported
+attributes for each endpoints are listed
+[here](https://docs.openalex.org/api/get-lists-of-entities/filter-entity-lists).
 
-Many persistent identifiers (PIDs) are canonically expressed as a URL that will take you to the thing being identified. Where these URL formats exist, OpenAlex treats them as the canonical ID, and also accepts them as valid IDs. Example:
-```{r}
-query_work <- oaQueryBuild(
-  identifier = "doi:https://doi.org/10.1016/j.joi.2017.08.007",
-  entity = "works"
-  )
+**Example**: We want to download all works published by a set of
+authors. We can do this by filtering on the
+authorships.author.id/author.id or authorships.author.orcid/author.orcid
+attribute (see more on attributes
+[here](https://docs.openalex.org/api/get-lists-of-entities/filter-entity-lists#works-attribute-filters)):
 
-cat(query_work)
-
-## https://api.openalex.org/works/doi:https://doi.org/10.1016/j.joi.2017.08.007
+``` r
+oa_fetch(
+  entity = "works",
+  author.id = c("A923435168", "A2208157607"),
+  verbose = TRUE
+) %>% 
+  show_works() %>% 
+  knitr::kable()
+#> [1] "https://api.openalex.org/works?filter=author.id%3AA923435168%7CA2208157607"
+#> Requesting url: https://api.openalex.org/works?filter=author.id%3AA923435168%7CA2208157607
+#> About to get a total of 1 pages of results with a total of 151 records.
 ```
 
-```{r}
- res <- oaApiRequest(
-    query_url = query_work
-    )
+| short_id    | display_name                                                                                 | first_author       | last_author          | so                                                                    | url                                                                                | is_oa | top_concepts                                                                             |
+|:------------|:---------------------------------------------------------------------------------------------|:-------------------|:---------------------|:----------------------------------------------------------------------|:-----------------------------------------------------------------------------------|:------|:-----------------------------------------------------------------------------------------|
+| W2755950973 | bibliometrix : An R-tool for comprehensive science mapping analysis                          | Massimo Aria       | Corrado Cuccurullo   | Journal of Informetrics                                               | <https://doi.org/10.1016/j.joi.2017.08.007>                                        | FALSE | Computer science, Data science, Information retrieval                                    |
+| W2741809807 | The state of OA: a large-scale analysis of the prevalence and impact of Open Access articles | Heather A. Piwowar | Stefanie Haustein    | PeerJ                                                                 | <https://doi.org/10.7717/peerj.4375>                                               | TRUE  | Citation, License, Scholarly communication, Web of science, Bibliometrics, Open science  |
+| W2122130843 | Scientometrics 2.0: New metrics of scholarly impact on the social Web                        | Jason Priem        | Bradely H. Hemminger | First Monday                                                          | <https://doi.org/10.5210/fm.v15i7.2874>                                            | FALSE | Bookmarking, Microblogging, Altmetrics, Social media, Computer science, World Wide Web   |
+| W2041540760 | How and why scholars cite on Twitter                                                         | Jason Priem        | Kaitlin L. Costello  | Proceedings Of The Association For Information Science And Technology | <https://doi.org/10.1002/meet.14504701201>                                         | TRUE  | Microblogging, Conversation, Social media, Citation, Scholarly communication, Altmetrics |
+| W1553564559 | Altmetrics in the wild: Using social media to explore scholarly impact                       | Jason Priem        | Bradley M. Hemminger | arXiv: Digital Libraries                                              | <https://arxiv.org/abs/1203.4745>                                                  | FALSE | Altmetrics, Social media, Citation, Computer science, Data science, Diversity (politics) |
+| W3130540911 | altmetrics: a manifesto                                                                      | Jason Priem        | Cameron Neylon       | NA                                                                    | <https://digitalcommons.unl.edu/cgi/viewcontent.cgi?article=1187&context=scholcom> | FALSE | Altmetrics, Manifesto                                                                    |
+
+``` r
+
+orcids <- c("0000-0003-3737-6565", "0000-0002-8517-9411")
+canonical_orcids <- paste0("https://orcid.org/", orcids)
+oa_fetch(
+  entity = "works",
+  author.orcid = canonical_orcids,
+  verbose = TRUE
+) %>% 
+  show_works() %>% 
+  knitr::kable()
+#> [1] "https://api.openalex.org/works?filter=author.orcid%3Ahttps%3A%2F%2Forcid.org%2F0000-0003-3737-6565%7Chttps%3A%2F%2Forcid.org%2F0000-0002-8517-9411"
+#> Requesting url: https://api.openalex.org/works?filter=author.orcid%3Ahttps%3A%2F%2Forcid.org%2F0000-0003-3737-6565%7Chttps%3A%2F%2Forcid.org%2F0000-0002-8517-9411
+#> About to get a total of 2 pages of results with a total of 211 records.
 ```
 
-```{r}
-df <- oa2df(res, entity = "works")
-
-dplyr::glimpse(df)
-
-# Rows: 1
-# Columns: 22
-# $ id            <chr> "https://openalex.org/W2755950973"
-# $ TI            <chr> "bibliometrix: An R-tool for comprehensive science mapping analysis"
-# $ author        <list> [<data.frame[2 x 10]>]
-# $ AB            <chr> ""
-# $ pubdata       <chr> "2017-11-01"
-# $ relscore      <dbl> 15.26293
-# $ SO            <chr> "Journal of Informetrics"
-# $ SO_ID         <chr> "https://openalex.org/V205292342"
-# $ PU            <chr> "Elsevier"
-# $ IS            <list> <"1875-5879", "1751-1577">
-# $ URL           <chr> "https://doi.org/10.1016/j.joi.2017.08.007"
-# $ OA            <lgl> FALSE
-# $ TC            <int> 1120
-# $ TCperYear     <lgl> NA
-# $ PY            <int> 2017
-# $ cited_by_url  <chr> "https://api.openalex.org/works?filter=cites:W2755950973"
-# $ ids           <list> [[<data.frame[4 x 2]>]]
-# $ DI            <chr> "https://doi.org/10.1016/j.joi.2017.08.007"
-# $ DT            <chr> "journal-article"
-# $ CR            <list> <"https://openalex.org/W192816456", "https://openalex.org/W2132948308", "…
-# $ related_works <list> <"https://openalex.org/W2408216567", "https://openalex.org/W3125505924", …
-# $ concept       <list> [<data.frame[4 x 5]>]
-```
-
-### Query to obtain all information about a two o more publications
-
-To download the records of two o more identifiers through a single query, we can recursively apply **oaApiRequest** to each id using the function **lapply**.
-
-```{r}
-ids <- c("W2755950973","W3005144120")
-
-res <- lapply(ids, function(x){
-  oaApiRequest(
-    query_url = oaQueryBuild(
-      identifier = x,
-      entity = "works"
-    )
-  )
-})
-```
-
-```{r}
-df <- oa2df(res, entity = "works")
-
-dplyr::glimpse(df)
-
-# Rows: 2
-# Columns: 22
-# $ id            <chr> "https://openalex.org/W2755950973", "https://openalex.org/W3005144120"
-# $ TI            <chr> "bibliometrix: An R-tool for comprehensive science mapping analysis", "Mapping the Evolution of Social Research and Data Scien…
-# $ author        <list> [<data.frame[2 x 10]>], [<data.frame[3 x 10]>]
-# $ AB            <chr> "", "Social Indicators Research (SIR) year by year has consolidated its preeminent position in the debate concerning the study…
-# $ pubdata       <chr> "2017-11-01", "2020-06-01"
-# $ relscore      <dbl> 15.88510, 15.72882
-# $ SO            <chr> "Journal of Informetrics", "Social Indicators Research"
-# $ SO_ID         <chr> "https://openalex.org/V205292342", "https://openalex.org/V112952035"
-# $ PU            <chr> "Elsevier", "Springer Nature"
-# $ IS            <list> <"1875-5879", "1751-1577">, <"1573-0921", "0303-8300">
-# $ URL           <chr> "https://doi.org/10.1016/j.joi.2017.08.007", "https://doi.org/10.1007/s11205-020-02281-3"
-# $ OA            <lgl> FALSE, FALSE
-# $ TC            <int> 1120, 32
-# $ TCperYear     <lgl> NA, NA
-# $ PY            <int> 2017, 2020
-# $ cited_by_url  <chr> "https://api.openalex.org/works?filter=cites:W2755950973", "https://api.openalex.org/works?filter=cites:W3005144120"
-# $ ids           <list> [[<data.frame[4 x 2]>]], [[<data.frame[4 x 2]>]]
-# $ DI            <chr> "https://doi.org/10.1016/j.joi.2017.08.007", "https://doi.org/10.1007/s11205-020-02281-3"
-# $ DT            <chr> "journal-article", "journal-article"
-# $ CR            <list> <"https://openalex.org/W192816456", "https://openalex.org/W2132948308", "https://openalex.org/W349374990", "https://openalex.…
-# $ related_works <list> <"https://openalex.org/W2408216567", "https://openalex.org/W3125505924", "https://openalex.org/W2150220236", "https://openalex…
-# $ concept       <list> [<data.frame[4 x 5]>], [<data.frame[8 x 5]>]
-```
-
-### Query to obtain all information about a single author
-
-The author Massimo Aria is associated to the OpenAlex-id A923435168.
-
-```{r}
-
-query_author <- oaQueryBuild(
-  identifier = "A923435168",
-  entity = "authors")
-
-cat(query_author)
-
-## https://api.openalex.org/authors/A923435168
-```
-
-```{r}
- res_author <- oaApiRequest(
-    query_url = query_author,
-    total.count = FALSE,
-    verbose = FALSE
- )
-```
-
-```{r}
-df <- oa2df(res_author, entity = "authors")
-
-dplyr::glimpse(df)
-
-# Rows: 1
-# Columns: 16
-# $ id                  <chr> "https://openalex.org/A923435168"
-# $ name                <chr> "Massimo Aria"
-# $ name_alternatives   <lgl> NA
-# $ rel_score           <dbl> 16.74535
-# $ ids                 <list> [<data.frame[4 x 2]>]
-# $ orcid               <chr> "https://orcid.org/0000-0002-8517-9411"
-# $ works_count         <int> 102
-# $ TC                  <int> 2525
-# $ TCperYear           <list> [<data.frame[11 x 3]>]
-# $ affiliation_name    <chr> "University of Naples Federico II"
-# $ affiliation_id      <chr> "https://openalex.org/I71267560"
-# $ affiliation_ror     <chr> "https://ror.org/05290cv24"
-# $ affiliation_country <chr> "IT"
-# $ affiliation_type    <chr> "education"
-# $ concept             <list> [<data.frame[17 x 5]>]
-# $ works_api_url       <chr> "https://api.openalex.org/works?filter=author.id:A923435168"
-```
-
-&nbsp;
-
-&nbsp;
-
-## Get all entities matching a set of inclusion/exclusion criteria (filters) 
-
-In most cases, we are interested in downloading a collection of items that meet one or more inclusion/exclusion criteria (filters).
-
-&nbsp;
-
-In this case, the query definition will not be based on a single identifier but the choice of the entity type (usually "works") and one or more filters about this entity.
-
-Filters narrow the list down to just entities that meet a particular condition--specifically, a particular value for a particular attribute. Supported attributes for each endpoints are listed on [OpenAlex API Documentation Website](https://docs.openalex.org/api/get-lists-of-entities#filter).
-
-Filters are formatted thusly: **attribute:***value*. You set them using the *?filter* query parameter. Filters are case-insensitive.
-
-&nbsp;
-
-Each endpoint supports its own list of filters. Here they are, by endpoint:
-
-&nbsp;
-
-**/works filters**
-
-You can filter using these attributes of the Works object. 
-
-* display_name.search (alias: title.search)
-
-* publication_year
-
-* publication_date
-
-* from_publication_date
-
-* to_publication_date
-
-* host_venue.issn
-
-* authorships.author.id (alias: author.id)
-
-* type
-
-etc.
-
-You can find more documentation about each attribute on the [OA Documentation Work page](https://docs.openalex.org/about-the-data/work).
-
-&nbsp;
-
-**/authors filters**
-
-You can filter using these attributes of the Authors object. 
-
-* display_name.search
-
-* works_count
-
-* cited_by_count
-
-* last_known_institution.id
-
-etc.
-
-You can find more documentation about each attribute on the [OA Documentation Author page](https://docs.openalex.org/about-the-data/author).
-
-&nbsp;
-
-**/venues filters**
-
-You can filter using these attributes of the Venue object. 
-
-* display_name.search
-
-* issn
-
-* works_count
-
-* cited_by_count
-
-etc. 
-
-You can find more documentation about each attribute on the [OA Documentation Venue page](https://docs.openalex.org/about-the-data/venue).
-
-&nbsp;
-
-**/institutions filters**
-
-You can filter using these attributes of the Institution object. 
-
-* display_name.search
-
-* country_code
-
-* type
-
-* works_count
- 
-* cited_by_count
-
-* x_concepts.id
-
-You can find more documentation about each attribute on the  [OA Documentation Institution page](https://docs.openalex.org/about-the-data/institution).
-
-&nbsp;
-
-**/concepts filters**
-
-You can filter using these attributes of the Concept object. You can find more documentation about each attribute on the Concept page.
-
-* display_name.search
-
-* level
-
-* works_count
-
-* cited_by_count
-
-* ancestors.id
-
-You can find more documentation about each attribute on the [OA Documentation Concept page](https://docs.openalex.org/about-the-data/concept).
-
-&nbsp;
-
-Below we show some examples of filters in use.
-
-&nbsp;
-
-### Filters based on string matching
-
-**We want to download all works, cited more than 50 times, published between 2020 and 2021, which include the strings "bibliometric analysis" or "science mapping" in the title.**
-
-To do that, we have to set filters about three attributes: title content (*"title.search"*), starting date for publication (*"from_publication_date"*), and ending date for publication (*"to_publication_date"*).
-
-Starting and ending dates can be passed to the function **oaQueryBuild** using the arguments *date_from* and *date_to*. The format is YYYY-MM-DD.
-
-The other attributes can be passed to the function through the argument *filter*.  
-
-When an attribute has more than one item, these can be separated by the boolean operator OR represented by the symbol **|** .
-
-On the contrary, different attributes have to be separated by commas.
-
-e.g. **filter = 'title.search:"bibliometric analysis"|"science mapping", cited_by_count:>50'**
-
-where:
-
-* 'title.search:"bibliometric analysis"|"science mapping'
-
-means all works containing the string "bibliometric analysis" OR "science mapping" in the publication title.
-
-and:
-
-* cited_by_count:>50
-
-means all works cited more than 10 times.
-
-The whole filter **'title.search:"bibliometric analysis"|"science mapping",cited_by_count:>50'** 
-
-can be read as:
-
-    *"all works containing the string "bibliometric analysis" OR "science mapping" 
-    in the publication title AND cited more than 50 times"*.
-
-
-
-```{r}
-query <- oaQueryBuild(
-    identifier=NULL,
-    entity = "works",
-    filter = 'title.search:"bibliometric analysis"|"science mapping",cited_by_count:>50',
-    date_from = "2020-01-01",
-    date_to = "2021-12-31",
-    search=NULL,
-    sort="cited_by_count:desc",
-    endpoint = "https://api.openalex.org/")
-```
-
-
-The **sort** argument indicates how results have to be sorted. 
-
-In this example results are sorted by total citations in a descending order.
-
-Setting the argument total.count=TRUE, the function **oaApiRequest** returns the number of items matching the query without downloading the collection. 
-
-```{r}
- res <- oaApiRequest(
-    query_url = query,
-    total.count = TRUE,
-    verbose = FALSE
-    )
-
-res$count
-
-## 235
-```
-
-Then, we can download the collection:
-
-```{r}
- res <- oaApiRequest(
-    query_url = query,
-    total.count = FALSE,
-    verbose = FALSE
-    )
-    
-## OpenAlex downloading [======================] 100% eta:  0s
-```
-
-and transform it into a data frame:
-
-```{r}
-df <- oa2df(res, entity = "works")
-
-## converting [===============================] 100% eta:  0s
-```
-
-```{r}
-dplyr::glimpse(df)
-
-# Rows: 235
-# Columns: 22
-# $ id            <chr> "https://openalex.org/W2755950973", "https://openalex.org/W1965746216", "https://openalex.org/W2108680868", "ht…
-# $ TI            <chr> "bibliometrix: An R-tool for comprehensive science mapping analysis", "Green supply chain management: A review …
-# $ author        <list> [<data.frame[2 x 10]>], [<data.frame[3 x 10]>], [<data.frame[4 x 10]>], [<data.frame[3 x 10]>], [<data.frame[2…
-# $ AB            <chr> "", "", "", "Social responsibilities of businesses and their managers have been discussed since the 1950s. Yet …
-# $ pubdata       <chr> "2017-11-01", "2015-04-01", "2011-07-01", "2005-09-01", "2007-07-11", "2015-11-01", "2012-08-01", "2015-12-01",…
-# $ relscore      <dbl> 454.6580, 398.4448, 373.5673, 314.2572, 303.1636, 295.9913, 279.6742, 278.5277, 251.8241, 249.3967, 243.1842, 2…
-# $ SO            <chr> "Journal of Informetrics", "International Journal of Production Economics", "Journal of the Association for Inf…
-# $ SO_ID         <chr> "https://openalex.org/V205292342", "https://openalex.org/V184816971", "https://openalex.org/V80113298", "https:…
-# $ PU            <chr> "Elsevier", "Elsevier", "Wiley", "SAGE", "Springer Nature", "Wiley", "Wiley", "Springer Nature", "Journal of Da…
-# $ IS            <list> <"1875-5879", "1751-1577">, <"0925-5273", "1873-7579">, <"1532-2882", "1532-2890">, <"0007-6503", "1552-4205">…
-# $ URL           <chr> "https://doi.org/10.1016/j.joi.2017.08.007", "https://doi.org/10.1016/j.ijpe.2015.01.003", "https://doi.org/10.…
-# $ OA            <lgl> FALSE, FALSE, FALSE, NA, FALSE, TRUE, FALSE, TRUE, TRUE, NA, FALSE, FALSE, FALSE, NA, FALSE, FALSE, TRUE, FALSE…
-# $ TC            <int> 1120, 720, 829, 656, 272, 652, 377, 401, 316, 280, 209, 136, 76, 209, 300, 313, 227, 164, 179, 172, 115, 125, 1…
-# $ TCperYear     <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-# $ PY            <int> 2017, 2015, 2011, 2005, 2007, 2015, 2012, 2015, 2017, 2009, 2016, 2005, 2014, 2004, 2011, 2007, 2017, 2008, 201…
-# $ cited_by_url  <chr> "https://api.openalex.org/works?filter=cites:W2755950973", "https://api.openalex.org/works?filter=cites:W196574…
-# $ ids           <list> [[<data.frame[4 x 2]>]], [[<data.frame[4 x 2]>]], [[<data.frame[4 x 2]>]], [[<data.frame[4 x 2]>]], [[<data.fr…
-# $ DI            <chr> "https://doi.org/10.1016/j.joi.2017.08.007", "https://doi.org/10.1016/j.ijpe.2015.01.003", "https://doi.org/10.…
-# $ DT            <chr> "journal-article", "journal-article", "journal-article", "journal-article", "journal-article", "journal-article…
-# $ CR            <list> <"https://openalex.org/W192816456", "https://openalex.org/W2132948308", "https://openalex.org/W349374990", "ht…
-# $ related_works <list> <"https://openalex.org/W2408216567", "https://openalex.org/W3125505924", "https://openalex.org/W2150220236", "…
-# $ concept       <list> [<data.frame[4 x 5]>], [<data.frame[8 x 5]>], [<data.frame[4 x 5]>], [<data.frame[8 x 5]>], [<data.frame[9 x 5…
-```
-
-&nbsp;
-
-### Get all works citing a particular work.
-
-We can download all publications citing another publication by using the filter attribute **cites:***id*.
-
-For example, if we want to download all publications citing the article Aria and Cuccurullo (2017), we have just to set the argument filter as:
-
-**filter = "cites:W2755950973"**
-
-where *"W2755950973"* is the OA id for the article by Aria and Cuccurullo.
-
-```{r}
-query1 <- oaQueryBuild(
- identifier=NULL,
- entity = "works",
- filter = "cites:W2755950973",
- date_from = NULL,
- date_to = NULL,
- sort=NULL)
-
-res1 <- oaApiRequest(
-    query_url = query1,
-    total.count = TRUE,
-    verbose = FALSE
-    )
-```
-
-This query will return a collection of:
-```{r}
-cat(res1$count, "publications")
-
-## 1094 publications
-```
-
-Let's to download it:
-
-```{r}
-res1 <- oaApiRequest(
-    query_url = query1,
-    total.count = FALSE,
-    verbose = FALSE
-    )
-
-# OpenAlex downloading [=====================] 100% eta:  0s
-```
-
-And then to convert it into a data frame:
-
-```{r}
-df <- oa2df(res, entity = "works")
-
-# converting [===============================] 100% eta:  0s
-```
-```{r}
-dplyr::glimpse(df)
-
-# Rows: 1,094
-# Columns: 22
-# $ id            <chr> "https://openalex.org/W4206700957", "https://openalex.org/W3215846996", "https://openalex.org/W3167593369", "ht…
-# $ TI            <chr> "Developing metrics for emerging technologies: identification and assessment", "20 years after To Err Is Human:…
-# $ author        <list> [<data.frame[5 x 10]>], [<data.frame[4 x 10]>], [<data.frame[5 x 10]>], [<data.frame[7 x 10]>], [<data.frame[3…
-# $ AB            <chr> "• current research topics in the field of emerging technologies • direction of future research in the field of…
-# $ pubdata       <chr> "2022-03-01", "2022-03-01", "2022-03-01", "2022-02-15", "2022-02-01", "2022-01-26", "2022-01-25", "2022-01-24",…
-# $ relscore      <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-# $ SO            <chr> "Technological Forecasting and Social Change", "Safety Science", "International Transactions in Operational Res…
-# $ SO_ID         <chr> "https://openalex.org/V39307421", "https://openalex.org/V123149298", "https://openalex.org/V267729", "https://o…
-# $ PU            <chr> "Elsevier", "Elsevier", "Wiley", "Elsevier", "Elsevier", NA, NA, "Springer Nature", "Taylor & Francis", "Spring…
-# $ IS            <list> <"0040-1625", "1873-5509">, <"1879-1042", "0925-7535">, <"1475-3995", "0969-6016">, <"1873-3336", "0304-3894">…
-# $ URL           <chr> "https://doi.org/10.1016/j.techfore.2021.121456", "https://www.sciencedirect.com/science/article/abs/pii/S09257…
-# $ OA            <lgl> NA, NA, TRUE, FALSE, FALSE, NA, TRUE, NA, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, NA…
-# $ TC            <int> NA, 0, 3, 0, 0, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-# $ TCperYear     <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-# $ PY            <int> 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 202…
-# $ cited_by_url  <chr> "https://api.openalex.org/works?filter=cites:W4206700957", "https://api.openalex.org/works?filter=cites:W321584…
-# $ ids           <list> [[<data.frame[4 x 2]>]], [[<data.frame[4 x 2]>]], [[<data.frame[4 x 2]>]], [[<data.frame[4 x 2]>]], [[<data.fr…
-# $ DI            <chr> "https://doi.org/10.1016/j.techfore.2021.121456", "https://doi.org/10.1016/j.ssci.2021.105593", "https://doi.or…
-# $ DT            <chr> "journal-article", "journal-article", "journal-article", "journal-article", "journal-article", "journal-article…
-# $ CR            <list> <"https://openalex.org/W2105822516", "https://openalex.org/W2787955605", "https://openalex.org/W2135455887", "…
-# $ related_works <list> "https://openalex.org/W2791453970", <NULL>, <"https://openalex.org/W2510274029", "https://openalex.org/W226895…
-# $ concept       <list> [<data.frame[5 x 5]>], <NULL>, [<data.frame[6 x 5]>], [<data.frame[12 x 5]>], [<data.frame[4 x 5]>], [<data.fr…
-```
-
-&nbsp;
-
-### Get all authors matching a set of filters
-
-We want download all authors' records of scholars who work at the University of Naples Federico II (OpenAlex ID: I71267560) and who have published more than 499 works:
-
-```{r}
-query_author <- oaQueryBuild(
+| short_id    | display_name                                                                                                                              | first_author          | last_author         | so                              | url                                             | is_oa | top_concepts                                                                                                  |
+|:------------|:------------------------------------------------------------------------------------------------------------------------------------------|:----------------------|:--------------------|:--------------------------------|:------------------------------------------------|:------|:--------------------------------------------------------------------------------------------------------------|
+| W2755950973 | bibliometrix : An R-tool for comprehensive science mapping analysis                                                                       | Massimo Aria          | Corrado Cuccurullo  | Journal of Informetrics         | <https://doi.org/10.1016/j.joi.2017.08.007>     | FALSE | Computer science, Data science, Information retrieval                                                         |
+| W1979874437 | Analysis of powered two-wheeler crashes in Italy by classification trees and rules discovery                                              | Alfonso Montella      | Filomena Mauriello  | Accident Analysis & Prevention  | <https://doi.org/10.1016/j.aap.2011.04.025>     | FALSE | Crash, Computer science, Data mining, Identification (biology), Decision tree, Probabilistic logic            |
+| W2955219525 | Scaling tree-based automated machine learning to biomedical big data with a feature set selector                                          | Trang T. Le           | Jason H. Moore      | Bioinformatics                  | <https://doi.org/10.1093/bioinformatics/btz470> | TRUE  | Pipeline (software), Computer science, Scalability, Feature (linguistics), Set (abstract data type), Big data |
+| W2952824318 | A Nonlinear Simulation Framework Supports Adjusting for Age When Analyzing BrainAGE                                                       | Trang T. Le           | Tulsa Investigators | Frontiers in Aging Neuroscience | <https://doi.org/10.3389/fnagi.2018.00317>      | TRUE  | Correlation, Mood, Set (abstract data type), Contrast (vision), Anxiety, Psychology                           |
+| W2408216567 | Foundations and trends in performance management. A twenty-five years bibliometric analysis in business and public administration domains | Corrado Cuccurullo    | Fabrizia Sarto      | Scientometrics                  | <https://doi.org/10.1007/s11192-016-1948-8>     | FALSE | Administration (probate law), Bibliometrics, Regional science, Trend analysis, Political science, Sociology   |
+| W2281330131 | Coopetition and sustainable competitive advantage. The case of tourist destinations                                                       | Valentina Della Corte | Massimo Aria        | Tourism Management              | <https://doi.org/10.1016/j.tourman.2015.12.009> | FALSE | Coopetition, Competitive advantage, Business, Destinations, Tourist destinations, Tourism                     |
+
+**Example**: We want to download all works that have been cited more
+than 50 times, published between 2020 and 2021, and include the strings
+“bibliometric analysis” or “science mapping” in the title. Maybe we also
+want the results to be sorted by total citations in a descending order.
+
+Setting the argument `count_only = TRUE`, the function `oa_request()`
+returns the number of items matching the query without downloading the
+collection.
+
+``` r
+oa_fetch(
   identifier = NULL,
+  entity = "works",
+  title.search = c("bibliometric analysis", "science mapping"),
+  cited_by_count = ">50", 
+  from_publication_date = "2020-01-01",
+  to_publication_date = "2021-12-31",
+  search = NULL,
+  sort = "cited_by_count:desc",
+  endpoint = "https://api.openalex.org/",
+  count_only = TRUE,
+  verbose = TRUE
+)
+#> [1] "https://api.openalex.org/works?filter=title.search%3Abibliometric%20analysis%7Cscience%20mapping%2Ccited_by_count%3A%3E50%2Cfrom_publication_date%3A2020-01-01%2Cto_publication_date%3A2021-12-31&sort=cited_by_count%3Adesc"
+#> Requesting url: https://api.openalex.org/works?filter=title.search%3Abibliometric%20analysis%7Cscience%20mapping%2Ccited_by_count%3A%3E50%2Cfrom_publication_date%3A2020-01-01%2Cto_publication_date%3A2021-12-31&sort=cited_by_count%3Adesc
+#>               count db_response_time_ms                page            per_page 
+#>                  27                  20                   1                 200
+```
+
+We can now download the records and transform it into a tibble/data
+frame by setting `count_only = FALSE` (also the default value):
+
+``` r
+oa_fetch(
+  entity = "works",
+  title.search = c("bibliometric analysis", "science mapping"),
+  cited_by_count = ">50", 
+  from_publication_date = "2020-01-01",
+  to_publication_date = "2021-12-31",
+  sort = "cited_by_count:desc",
+  count_only = FALSE
+) %>%
+  show_works() %>%
+  knitr::kable()
+```
+
+| short_id    | display_name                                                                                                                   | first_author        | last_author        | so                                        | url                                             | is_oa | top_concepts                                                                                                      |
+|:------------|:-------------------------------------------------------------------------------------------------------------------------------|:--------------------|:-------------------|:------------------------------------------|:------------------------------------------------|:------|:------------------------------------------------------------------------------------------------------------------|
+| W3160856016 | How to conduct a bibliometric analysis: An overview and guidelines                                                             | Naveen Donthu       | Weng Marc Lim      | Journal of Business Research              | <https://doi.org/10.1016/j.jbusres.2021.04.070> | TRUE  | Bibliometrics, Field (mathematics), Data science, Computer science, Resource (disambiguation), Management science |
+| W3038273726 | Investigating the emerging COVID-19 research trends in the field of business and management: A bibliometric analysis approach. | Surabhi Verma       | Anders Gustafsson  | Journal of Business Research              | <https://pubmed.ncbi.nlm.nih.gov/32834211/>     | NA    | Scopus, Coronavirus disease 2019 (COVID-19), Pandemic, Bibliometrics, Web of science, Field (mathematics)         |
+| W2990450011 | Forty-five years of Journal of Business Research: A bibliometric analysis                                                      | Naveen Donthu       | Debidutta Pattnaik | Journal of Business Research              | <https://doi.org/10.1016/j.jbusres.2019.10.039> | FALSE | Bibliometrics, Regional science                                                                                   |
+| W3001491100 | Software tools for conducting bibliometric analysis in science: An up-to-date review                                           | Jose A. Moral-Munoz | Manuel Cobo        | Profesional De La Informacion             | <https://doi.org/10.3145/epi.2020.ene.03>       | TRUE  | Bibliometrics, Software, Computer science, Data science, Library science, Software engineering                    |
+| W3011866596 | A Bibliometric Analysis of COVID-19 Research Activity: A Call for Increased Output                                             | Mohamad A. Chahrour | Hussein H. Khachfe | Cureus                                    | <https://doi.org/10.7759/cureus.7357>           | TRUE  | Pandemic, Medicine, Observational study, Gross domestic product, Coronavirus disease 2019 (COVID-19), Population  |
+| W3044902155 | Financial literacy: A systematic review and bibliometric analysis                                                              | Kirti Goyal         | Satish Kumar       | International Journal of Consumer Studies | <https://doi.org/10.1111/ijcs.12605>            | FALSE | Financial literacy, Content analysis, Citation, Citation analysis, Bibliometrics, Literacy                        |
+
+Read on to see how we can shorten these two function calls.
+
+## Authors
+
+Similarly to work, we can use identifier to pass in authors’ OpenAlex
+ID.
+
+**Example**: We want more information on authors with IDs **A923435168**
+and **A2208157607**.
+
+``` r
+oa_fetch(
+  identifier = c("A923435168", "A2208157607"),
+  verbose = TRUE
+) %>%
+  show_authors() %>%
+  knitr::kable()
+#> [1] "https://api.openalex.org/authors?filter=openalex_id%3AA923435168%7CA2208157607"
+#> Requesting url: https://api.openalex.org/authors?filter=openalex_id%3AA923435168%7CA2208157607
+#> About to get a total of 1 pages of results with a total of 2 records.
+```
+
+| short_id    | display_name | orcid               | works_count | cited_by_count | affiliation_display_name         | top_concepts                                                                            |
+|:------------|:-------------|:--------------------|------------:|---------------:|:---------------------------------|:----------------------------------------------------------------------------------------|
+| A923435168  | Massimo Aria | 0000-0002-8517-9411 |         102 |           2952 | University of Naples Federico II | Biology, Medicine, Computer science, Mathematics, Psychology, Statistics                |
+| A2208157607 | Jason Priem  | 0000-0001-6187-6610 |          49 |           2142 | HortResearch                     | Computer science, World Wide Web, Political science, Law, Library science, Data science |
+
+**Example**: We want download all authors’ records of scholars who work
+at the University of Naples Federico II (OpenAlex ID: I71267560) and who
+have published more than 499 works.
+
+Let’s first check how many records match the query, then set
+`count_only = FALSE` to download the entire collection. We can do this
+by first defining a list of arguments, then adding `count_only` (default
+`FALSE`) to this list:
+
+``` r
+my_arguments <- list(
   entity = "authors",
-  filter = "last_known_institution.id:I71267560,works_count:>499")
+  last_known_institution.id = "I71267560",
+  works_count = ">499"
+  )
 
+do.call(oa_fetch, c(my_arguments, list(count_only = TRUE)))
+#>               count db_response_time_ms                page            per_page 
+#>                  22                   7                   1                 200
+do.call(oa_fetch, my_arguments) %>% 
+  show_authors() %>%
+  knitr::kable()
 ```
 
-Check how many records match the query:
+| short_id    | display_name             | orcid               | works_count | cited_by_count | affiliation_display_name         | top_concepts                                                                                      |
+|:------------|:-------------------------|:--------------------|------------:|---------------:|:---------------------------------|:--------------------------------------------------------------------------------------------------|
+| A2600338221 | Alberto Orso Maria Iorio | 0000-0002-3798-1135 |        1144 |          47933 | University of Naples Federico II | Physics, Nuclear physics, Particle physics, Quantum mechanics, Large Hadron Collider, Mathematics |
+| A2011452631 | Leonardo Merola          | NA                  |        1115 |          35281 | University of Naples Federico II | Physics, Particle physics, Nuclear physics, Quantum mechanics, Large Hadron Collider, Biology     |
+| A3113327292 | Vincenzo Canale          | NA                  |         990 |          29062 | University of Naples Federico II | Physics, Quantum mechanics, Particle physics, Nuclear physics, Large Hadron Collider, Geology     |
+| A2062713547 | G. De Nardo              | NA                  |         959 |          20140 | University of Naples Federico II | Physics, Nuclear physics, Particle physics, Quantum mechanics, Hadron, Atomic physics             |
+| A223517670  | Ettore Novellino         | 0000-0002-2181-2142 |         933 |          23003 | University of Naples Federico II | Chemistry, Biology, Biochemistry, Genetics, Medicine, Organic chemistry                           |
+| A2159261619 | Annamaria Colao          | 0000-0001-6986-266X |         927 |          40286 | University of Naples Federico II | Medicine, Biology, Internal medicine, Endocrinology, Pathology, Chemistry                         |
 
-```{r}
-res <- oaApiRequest(query_url = query_author,
-                    total.count = TRUE,
-                    verbose=FALSE)
-res$count
+You can also filter by other
+[filters](https://docs.openalex.org/api/get-lists-of-entities/filter-entity-lists#authors-filters)
+such as `display_name`, `has_orcid`, and `orcid`:
 
-## 34
+``` r
+oa_fetch(
+  entity = "authors",
+  display_name = "Massimo Aria",
+  has_orcid = "true"
+) %>%
+  show_authors() %>%
+  knitr::kable()
 ```
 
-Then, we download and convert the collection:
+| short_id    | display_name | orcid               | works_count | cited_by_count | affiliation_display_name         | top_concepts                                                                   |
+|:------------|:-------------|:--------------------|------------:|---------------:|:---------------------------------|:-------------------------------------------------------------------------------|
+| A923435168  | Massimo Aria | 0000-0002-8517-9411 |         102 |           2952 | University of Naples Federico II | Biology, Medicine, Computer science, Mathematics, Psychology, Statistics       |
+| A2902074455 | Massimo Aria | 0000-0002-8517-9411 |          29 |             62 | University of Naples Federico II | Mathematics, Computer science, Economics, Biology, Political science, Business |
 
-```{r}
-res <- oaApiRequest(query_url = query_author,
-                    total.count = FALSE,
-                    verbose=FALSE)
-df <- oa2df(res, entity = "authors")
+``` r
 
-dplyr::glimpse(df)
-
-# Rows: 34
-# Columns: 16
-# $ id                  <chr> "https://openalex.org/A2061787601", "https://openalex.org/A2163747539", "https://openalex.org/A3088886425…
-# $ name                <chr> "Luca Lista", "Crisostomo Sciacca", "Alberto Aloisio", "Alberto Orso Maria Iorio", "Leonardo Merola", "Sa…
-# $ name_alternatives   <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…
-# $ rel_score           <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…
-# $ ids                 <list> [<data.frame[3 x 2]>], [<data.frame[3 x 2]>], [<data.frame[3 x 2]>], [<data.frame[3 x 2]>], [<data.frame…
-# $ orcid               <chr> "https://orcid.org/0000-0001-6471-5492", "https://orcid.org/0000-0002-8412-4072", "https://orcid.org/0000…
-# $ works_count         <int> 2538, 2230, 1506, 1165, 1119, 1055, 1025, 995, 965, 933, 921, 792, 780, 774, 769, 758, 743, 743, 740, 717…
-# $ TC                  <int> 97989, 60833, 77894, 67649, 46274, 34562, 27109, 39599, 47609, 21869, 39123, 60080, 16636, 47579, 42042, …
-# $ TCperYear           <list> [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<data.f…
-# $ affiliation_name    <chr> "University of Naples Federico II", "University of Naples Federico II", "University of Naples Federico II…
-# $ affiliation_id      <chr> "https://openalex.org/I71267560", "https://openalex.org/I71267560", "https://openalex.org/I71267560", "ht…
-# $ affiliation_ror     <chr> "https://ror.org/05290cv24", "https://ror.org/05290cv24", "https://ror.org/05290cv24", "https://ror.org/0…
-# $ affiliation_country <chr> "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT…
-# $ affiliation_type    <chr> "education", "education", "education", "education", "education", "education", "education", "education", "…
-# $ concept             <list> [<data.frame[28 x 5]>], [<data.frame[23 x 5]>], [<data.frame[46 x 5]>], [<data.frame[35 x 5]>], [<data.f…
-# $ works_api_url       <chr> "https://api.openalex.org/works?filter=author.id:A2061787601", "https://api.openalex.org/works?filter=aut…
+oa_fetch(
+  entity = "authors",
+  orcid = "0000-0002-8517-9411"
+) %>%
+  show_authors() %>%
+  knitr::kable()
 ```
 
-&nbsp;
+| short_id    | display_name | orcid               | works_count | cited_by_count | affiliation_display_name         | top_concepts                                                                   |
+|:------------|:-------------|:--------------------|------------:|---------------:|:---------------------------------|:-------------------------------------------------------------------------------|
+| A923435168  | Massimo Aria | 0000-0002-8517-9411 |         102 |           2952 | University of Naples Federico II | Biology, Medicine, Computer science, Mathematics, Psychology, Statistics       |
+| A2902074455 | Massimo Aria | 0000-0002-8517-9411 |          29 |             62 | University of Naples Federico II | Mathematics, Computer science, Economics, Biology, Political science, Business |
 
-### Get all institutions matching a set of filters
+## Institutions
 
-We want download all records regarding Italian institutions (country_code:it) that are classified as educational (type:education):
+**Example**: We want download all records regarding Italian institutions
+(country_code:it) that are classified as educational (type:education).
+Again, we check how many records match the query then download the
+collection:
 
-```{r}
-query_inst <- oaQueryBuild(
+``` r
+italian_insts <- list(
   entity = "institutions",
-  filter = "country_code:it,type:education")
+  country_code = "it",
+  type = "education",
+  verbose = TRUE
+)
 
+do.call(oa_fetch, c(italian_insts, list(count_only = TRUE)))
+#> [1] "https://api.openalex.org/institutions?filter=country_code%3Ait%2Ctype%3Aeducation"
+#> Requesting url: https://api.openalex.org/institutions?filter=country_code%3Ait%2Ctype%3Aeducation
+#>               count db_response_time_ms                page            per_page 
+#>                 231                  23                   1                 200
+dplyr::glimpse(do.call(oa_fetch, italian_insts))
+#> [1] "https://api.openalex.org/institutions?filter=country_code%3Ait%2Ctype%3Aeducation"
+#> Requesting url: https://api.openalex.org/institutions?filter=country_code%3Ait%2Ctype%3Aeducation
+#> About to get a total of 2 pages of results with a total of 231 records.
+#> Rows: 231
+#> Columns: 22
+#> $ id                        <chr> "https://openalex.org/I861853513", "https://…
+#> $ display_name              <chr> "Sapienza University of Rome", "University o…
+#> $ display_name_alternatives <list> "Università degli Studi di Roma \"La Sapien…
+#> $ display_name_acronyms     <list> NA, "UNIBO", "UNIPD", "UNIMI", NA, NA, "UNI…
+#> $ international             <list> [<data.frame[1 x 85]>], [<data.frame[1 x 10…
+#> $ ror                       <chr> "https://ror.org/02be6w209", "https://ror.or…
+#> $ ids                       <list> [<tbl_df[6 x 2]>], [<tbl_df[6 x 2]>], [<tbl…
+#> $ country_code              <chr> "IT", "IT", "IT", "IT", "IT", "IT", "IT", "I…
+#> $ geo                       <list> [<data.frame[1 x 7]>], [<data.frame[1 x 7]>…
+#> $ type                      <chr> "education", "education", "education", "educ…
+#> $ homepage_url              <chr> "http://www.uniroma1.it/", "http://www.unibo…
+#> $ image_url                 <chr> "https://upload.wikimedia.org/wikipedia/en/4…
+#> $ image_thumbnail_url       <chr> "https://upload.wikimedia.org/wikipedia/en/t…
+#> $ associated_institutions   <list> [<data.frame[1 x 24]>], [<data.frame[1 x 12…
+#> $ relevance_score           <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+#> $ works_count               <int> 163971, 130673, 129218, 127781, 91598, 86908…
+#> $ cited_by_count            <int> 10582871, 9649329, 9516585, 9171398, 5981760…
+#> $ counts_by_year            <list> [<data.frame[11 x 3]>], [<data.frame[11 x 3…
+#> $ works_api_url             <chr> "https://api.openalex.org/works?filter=insti…
+#> $ x_concepts                <list> [<data.frame[14 x 5]>], [<data.frame[15 x 5…
+#> $ updated_date              <chr> "2022-09-05T22:37:07.398707", "2022-09-02T15…
+#> $ created_date              <chr> "2016-06-24", "2016-06-24", "2016-06-24", "2…
 ```
 
-We check how many records match the query:
+## Venues (think journals)
 
-```{r}
-res <- oaApiRequest(query_url = query_inst,
-                    total.count = TRUE,
-                    verbose=TRUE)
-res$count
+**Example**: We want download all records regarding journals that have
+published more than 100,000 works:
 
-## 231
-```
-
-Then we download and convert the collection:
-
-```{r}
-res <- oaApiRequest(query_url = query_inst,
-                    total.count = FALSE,
-                    verbose=TRUE)
-df <- oa2df(res, entity = "institutions")
-
-dplyr::glimpse(df)
-
-# Rows: 231
-# Columns: 20
-# $ id                 <chr> "https://openalex.org/I861853513", "https://openalex.org/I189158943", "https://openalex.org/I9360294", "ht…
-# $ name               <chr> "Sapienza University of Rome", "University of Milan", "University of Bologna", "University of Padua", "Uni…
-# $ name_alternatives  <list> "Università degli Studi di Roma \"La Sapienza\"", "Statale", NA, "Università di Padova", "UniFI", NA, NA,…
-# $ name_acronyms      <list> NA, "UNIMI", "UNIBO", "UNIPD", NA, "UNITO", "UniPi", NA, NA, "UniGe", "UNIPV", NA, NA, NA, NA, NA, NA, "U…
-# $ name_international <list> [<data.frame[1 x 84]>], [<data.frame[1 x 59]>], [<data.frame[1 x 99]>], [<data.frame[1 x 78]>], [<data.fr…
-# $ ror                <chr> "https://ror.org/02be6w209", "https://ror.org/00wjc7c48", "https://ror.org/01111rn36", "https://ror.org/00…
-# $ ids                <list> [<data.frame[6 x 2]>], [<data.frame[6 x 2]>], [<data.frame[6 x 2]>], [<data.frame[6 x 2]>], [<data.frame[…
-# $ country            <chr> "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT", "IT"…
-# $ geo                <list> [<data.frame[1 x 7]>], [<data.frame[1 x 7]>], [<data.frame[1 x 7]>], [<data.frame[1 x 7]>], [<data.frame[…
-# $ type               <chr> "education", "education", "education", "education", "education", "education", "education", "education", "e…
-# $ homepage           <chr> "http://www.uniroma1.it/", "http://www.unimi.it/ENG/", "http://www.unibo.it/en/homepage", "https://www.uni…
-# $ image              <chr> "https://upload.wikimedia.org/wikipedia/en/4/45/Sapienza_University_of_Rome.png", "https://upload.wikimedi…
-# $ thumbnail          <chr> "https://upload.wikimedia.org/wikipedia/en/thumb/4/45/Sapienza_University_of_Rome.png/83px-Sapienza_Univer…
-# $ associated_inst    <list> [<data.frame[1 x 24]>], [<data.frame[1 x 12]>], [<data.frame[1 x 12]>], [<data.frame[1 x 12]>], [<data.fr…
-# $ rel_score          <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-# $ works_count        <int> 170399, 155881, 127161, 124356, 87214, 86939, 78857, 74975, 62800, 59244, 58427, 55810, 48666, 48050, 4484…
-# $ TC                 <int> 12295727, 12148721, 10608296, 10126781, 6064970, 7184436, 6238824, 5442312, 2437364, 4395213, 4426608, 426…
-# $ TCperYear          <list> [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<data.fr…
-# $ concept            <list> [<data.frame[13 x 5]>], [<data.frame[10 x 5]>], [<data.frame[12 x 5]>], [<data.frame[14 x 5]>], [<data.fr…
-# $ works_api_url      <chr> "https://api.openalex.org/works?filter=institutions.id:I861853513", "https://api.openalex.org/works?filter…
-```
-
-&nbsp;
-
-### Get all venues matching a set of filters
-
-We want download all records regarding journals that have published more than 100,000 works:
-
-```{r}
-query_venue <- oaQueryBuild(
+``` r
+big_journals <- list(
   entity = "venues",
-  filter = "works_count:>100000")
+  works_count = ">100000",
+  verbose = TRUE
+)
 
+do.call(oa_fetch, c(big_journals, list(count_only = TRUE)))
+#> [1] "https://api.openalex.org/venues?filter=works_count%3A%3E100000"
+#> Requesting url: https://api.openalex.org/venues?filter=works_count%3A%3E100000
+#>               count db_response_time_ms                page            per_page 
+#>                  51                   6                   1                 200
+dplyr::glimpse(do.call(oa_fetch, big_journals))
+#> [1] "https://api.openalex.org/venues?filter=works_count%3A%3E100000"
+#> Requesting url: https://api.openalex.org/venues?filter=works_count%3A%3E100000
+#> About to get a total of 1 pages of results with a total of 51 records.
+#> Rows: 51
+#> Columns: 15
+#> $ id              <chr> "https://openalex.org/V2751751161", "https://openalex.…
+#> $ display_name    <chr> "Social Science Research Network", "Research Papers in…
+#> $ publisher       <chr> NA, NA, "Wiley", NA, "Elsevier", "BMJ", "Springer Natu…
+#> $ issn            <list> NA, NA, <"1431-5890", "0931-7597", "1522-2667">, <"16…
+#> $ issn_l          <list> NA, NA, "0931-7597", "0302-9743", "0140-6736", "0959-…
+#> $ is_oa           <lgl> NA, NA, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS…
+#> $ is_in_doaj      <lgl> NA, NA, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS…
+#> $ ids             <list> [<tbl_df[2 x 2]>], [<tbl_df[2 x 2]>], [<tbl_df[6 x 2]…
+#> $ homepage_url    <chr> "http://www.ssrn.com/", "http://www.repec.org/", NA, "…
+#> $ relevance_score <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+#> $ works_count     <int> 758135, 752740, 738207, 514757, 469642, 449173, 432408…
+#> $ cited_by_count  <int> 2605930, 2318815, 223273, 5382214, 6715418, 3301643, 1…
+#> $ counts_by_year  <list> [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<dat…
+#> $ x_concepts      <list> [<data.frame[20 x 5]>], [<data.frame[20 x 5]>], [<dat…
+#> $ works_api_url   <chr> "https://api.openalex.org/works?filter=host_venue.id:V…
 ```
 
-We check how many records match the query:
+## Concepts (think theme, keywords)
 
-```{r}
-res <- oaApiRequest(query_url = query_venue,
-                    total.count = TRUE,
-                    verbose=TRUE)
-res$count
+**Example**: We want to download the records of all the concepts that
+concern at least one million works:
 
-## 41
-```
-
-Then we download and convert the collection:
-
-```{r}
-res <- oaApiRequest(query_url = query_venue,
-                    total.count = FALSE,
-                    verbose=TRUE)
-
-df <- oa2df(res, entity="venues")
-
-dplyr::glimpse(df)
-
-# Rows: 41
-# Columns: 15
-# $ id            <chr> "https://openalex.org/V2751751161", "https://openalex.org/V3121261024", "https://openalex.org/V41354064", "http…
-# $ name          <chr> "Social Science Research Network", "Research Papers in Economics", "ChemInform", "Lecture Notes in Computer Sci…
-# $ publisher     <chr> NA, NA, "Wiley", NA, "BMJ", "Public Library of Science", "Springer Nature", "Elsevier", NA, "American Associati…
-# $ issn          <list> NA, NA, <"1431-5890", "0931-7597", "1522-2667">, <"1611-3349", "0302-9743">, "0959-8138", "1932-6203", <"1476-…
-# $ issn_l        <list> NA, NA, "0931-7597", "0302-9743", "0959-8138", "1932-6203", "0028-0836", "0140-6736", "0003-0503", "0036-8075"…
-# $ is_oa         <lgl> NA, NA, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, NA, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, NA, TRUE, FALSE, F…
-# $ is_in_doaj    <lgl> NA, NA, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, NA, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, NA, TRUE, FALSE, …
-# $ ids           <list> [<data.frame[2 x 2]>], [<data.frame[2 x 2]>], [<data.frame[6 x 2]>], [<data.frame[5 x 2]>], [<data.frame[4 x 2…
-# $ homepage      <chr> "http://www.ssrn.com/", "http://www.repec.org/", NA, "http://www.springer.com/lncs", "http://www.bmj.com/thebmj…
-# $ rel_score     <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-# $ works_count   <int> 876560, 791035, 727829, 492176, 293439, 281416, 268358, 238844, 238230, 221709, 205392, 195400, 194314, 157804,…
-# $ TC            <int> 3232676, 2929586, 251764, 5719698, 3508157, 6554607, 19013848, 6953795, 25496, 16332877, 6949261, 14653679, 111…
-# $ TCperYear     <list> [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<data.frame[10 x 3]>], [<data.frame[11 x 3]>], [<data.frame[1…
-# $ concept       <list> [<data.frame[10 x 5]>], [<data.frame[11 x 5]>], [<data.frame[11 x 5]>], [<data.frame[11 x 5]>], [<data.frame[9…
-# $ works_api_url <chr> "https://api.openalex.org/works?filter=host_venue.id:V2751751161", "https://api.openalex.org/works?filter=host_…
-```
-
-&nbsp;
-
-### Get all concepts matching a set of filters
-
-We want to download the records of all the concepts that concern at least one million works:
-
-```{r}
-query_concept <- oaQueryBuild(
+``` r
+popular_concepts <- list(
   entity = "concepts",
-  filter = "works_count:>1000000")
+  works_count = ">1000000",
+  verbose = TRUE
+)
+
+do.call(oa_fetch, c(popular_concepts, list(count_only = TRUE)))
+#> [1] "https://api.openalex.org/concepts?filter=works_count%3A%3E1000000"
+#> Requesting url: https://api.openalex.org/concepts?filter=works_count%3A%3E1000000
+#>               count db_response_time_ms                page            per_page 
+#>                 147                  40                   1                 200
+dplyr::glimpse(do.call(oa_fetch, popular_concepts))
+#> [1] "https://api.openalex.org/concepts?filter=works_count%3A%3E1000000"
+#> Requesting url: https://api.openalex.org/concepts?filter=works_count%3A%3E1000000
+#> About to get a total of 1 pages of results with a total of 147 records.
+#> Rows: 147
+#> Columns: 17
+#> $ id                         <chr> "https://openalex.org/C41008148", "https://…
+#> $ display_name               <chr> "Computer science", "Medicine", "Chemistry"…
+#> $ display_name_international <list> [<data.frame[1 x 185]>], [<data.frame[1 x …
+#> $ description                <chr> "theoretical study of the formal foundation…
+#> $ description_international  <list> [<data.frame[1 x 40]>], [<data.frame[1 x 4…
+#> $ wikidata                   <chr> "https://www.wikidata.org/wiki/Q21198", "ht…
+#> $ level                      <int> 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0…
+#> $ ids                        <list> [<tbl_df[5 x 2]>], [<tbl_df[5 x 2]>], [<tb…
+#> $ image_url                  <chr> "https://upload.wikimedia.org/wikipedia/com…
+#> $ image_thumbnail_url        <chr> "https://upload.wikimedia.org/wikipedia/com…
+#> $ ancestors                  <list> NA, NA, NA, NA, NA, NA, NA, [<data.frame[2…
+#> $ related_concepts           <list> [<data.frame[93 x 5]>], [<data.frame[51 x …
+#> $ relevance_score            <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+#> $ works_count                <int> 40806340, 37239610, 20883170, 17657582, 171…
+#> $ cited_by_count             <int> 212764188, 354063411, 316656878, 154932922,…
+#> $ counts_by_year             <list> [<data.frame[11 x 3]>], [<data.frame[11 x …
+#> $ works_api_url              <chr> "https://api.openalex.org/works?filter=conc…
 ```
 
-We check how many records match the query:
+## Other examples
 
-```{r}
-res <- oaApiRequest(query_url = query_concept,
-                    total.count = TRUE,
-                    verbose=TRUE)
-res$count
+*Get all works citing a particular work*
 
-## 112
+We can download all publications citing another publication by using the
+filter attribute **cites**.
+
+For example, if we want to download all publications citing the article
+Aria and Cuccurullo (2017), we have just to set the argument filter as
+`cites = "W2755950973"` where “W2755950973” is the OA id for the article
+by Aria and Cuccurullo.
+
+``` r
+aria_count <- oa_fetch(
+  entity = "works",
+  cites = "W2755950973",
+  count_only = TRUE,
+  verbose = TRUE
+) 
+#> [1] "https://api.openalex.org/works?filter=cites%3AW2755950973"
+#> Requesting url: https://api.openalex.org/works?filter=cites%3AW2755950973
+aria_count
+#>               count db_response_time_ms                page            per_page 
+#>                1551                  52                   1                 200
 ```
 
-Then we download and convert the collection:
+This query will return a collection of 1551 publications. Among these
+articles, let’s download the ones published in the following year:
 
-```{r}
-res <- oaApiRequest(query_url = query_concept,
-                    total.count = FALSE,
-                    verbose=TRUE)
-
-df <- oa2df(res, entity="concepts")
-
-dplyr::glimpse(df)
-
-# Rows: 112
-# Columns: 17
-# $ id                        <chr> "https://openalex.org/C71924100", "https://openalex.org/C41008148", "https://openalex.org/C18559268…
-# $ name                      <chr> "Medicine", "Computer science", "Chemistry", "Political science", "Materials science", "Biology", "…
-# $ name_international        <list> [<data.frame[1 x 193]>], [<data.frame[1 x 184]>], [<data.frame[1 x 243]>], [<data.frame[1 x 127]>]…
-# $ description               <chr> "field of study for diagnosing, treating and preventing disease", "theoretical study of the formal …
-# $ description_international <list> [<data.frame[1 x 44]>], [<data.frame[1 x 38]>], [<data.frame[1 x 66]>], [<data.frame[1 x 34]>], [<…
-# $ wikidata                  <chr> "https://www.wikidata.org/wiki/Q11190", "https://www.wikidata.org/wiki/Q21198", "https://www.wikida…
-# $ level                     <int> 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, …
-# $ ids                       <list> [<data.frame[5 x 2]>], [<data.frame[5 x 2]>], [<data.frame[5 x 2]>], [<data.frame[5 x 2]>], [<data…
-# $ image                     <chr> "https://upload.wikimedia.org/wikipedia/commons/d/d2/Asklepios.3.jpg", "https://upload.wikimedia.or…
-# $ thumbnail                 <chr> "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Asklepios.3.jpg/66px-Asklepios.3.jpg", "…
-# $ ancestors                 <list> NA, NA, NA, NA, NA, NA, NA, NA, NA, [<data.frame[1 x 4]>], [<data.frame[2 x 4]>], NA, NA, NA, NA, …
-# $ rel_concepts              <list> [<data.frame[51 x 5]>], [<data.frame[93 x 5]>], [<data.frame[75 x 5]>], [<data.frame[30 x 5]>], [<…
-# $ rel_score                 <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-# $ works_count               <int> 38212152, 27325984, 20878571, 18779901, 18307811, 14944984, 14915488, 13658404, 12763237, 12194186,…
-# $ TC                        <int> 424256175, 230387386, 360713464, 49635741, 215259063, 338109876, 157672135, 13719028, 61920457, 199…
-# $ TCperYear                 <list> [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<data.frame[11 x 3]>], [<…
-# $ works_api_url             <chr> "https://api.openalex.org/works?filter=concepts.id:C71924100", "https://api.openalex.org/works?filt…
+``` r
+oa_fetch(
+  entity = "works",
+  cites = "W2755950973",
+  publication_year = 2018,
+  count_only = FALSE,
+  verbose = TRUE
+) %>% 
+  dplyr::glimpse()
+#> [1] "https://api.openalex.org/works?filter=cites%3AW2755950973%2Cpublication_year%3A2018"
+#> Requesting url: https://api.openalex.org/works?filter=cites%3AW2755950973%2Cpublication_year%3A2018
+#> About to get a total of 1 pages of results with a total of 16 records.
+#> Rows: 16
+#> Columns: 26
+#> $ id               <chr> "https://openalex.org/W2902888572", "https://openalex…
+#> $ display_name     <chr> "A global bibliometric analysis of Plesiomonas-relate…
+#> $ author           <list> [<data.frame[2 x 10]>], [<data.frame[7 x 10]>], [<da…
+#> $ ab               <chr> "Plesiomonas shigelloides is an emerging pathogen wit…
+#> $ publication_date <chr> "2018-11-29", "2018-06-25", "2018-04-01", "2018-09-27…
+#> $ relevance_score  <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…
+#> $ so               <chr> "PLOS ONE", "PLOS ONE", "Journal of Experimental Zool…
+#> $ so_id            <chr> "https://openalex.org/V202381698", "https://openalex.…
+#> $ publisher        <chr> "Public Library of Science", "Public Library of Scien…
+#> $ issn             <list> "1932-6203", "1932-6203", <"1932-5231", "1932-5223">…
+#> $ url              <chr> "https://doi.org/10.1371/journal.pone.0207655", "http…
+#> $ first_page       <chr> "e0207655", NA, "162", "10589", "3", "38", NA, "e0096…
+#> $ last_page        <chr> "e0207655", NA, "176", "10604", "15", "38", NA, "e009…
+#> $ volume           <chr> "13", "13", "329", "101", NA, "4", NA, "4", "22", "4"…
+#> $ issue            <chr> "11", "6", NA, "12", NA, "3", NA, "11", "3", "1", NA,…
+#> $ is_oa            <lgl> TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, FALS…
+#> $ cited_by_count   <int> 64, 47, 45, 42, 29, 28, 14, 14, 7, 7, 7, 5, 4, 1, 0, 0
+#> $ counts_by_year   <list> [<data.frame[4 x 2]>], [<data.frame[5 x 2]>], [<data.…
+#> $ publication_year <int> 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018…
+#> $ cited_by_api_url <chr> "https://api.openalex.org/works?filter=cites:W2902888…
+#> $ ids              <list> [<tbl_df[5 x 2]>], [<tbl_df[5 x 2]>], [<tbl_df[4 x 2]…
+#> $ doi              <chr> "https://doi.org/10.1371/journal.pone.0207655", "htt…
+#> $ type             <chr> "journal-article", "journal-article", "journal-articl…
+#> $ referenced_works <list> <"https://openalex.org/W1623369780", "https://openale…
+#> $ related_works    <list> <"https://openalex.org/W261917380", "https://openale…
+#> $ concepts         <list> [<data.frame[2 x 5]>], [<data.frame[11 x 5]>], [<dat…
 ```
 
 ## Convert an OpenAlex data frame to a bibliometrix object
 
-The bibliometrix R-package (https://www.bibliometrix.org) provides a set of tools for quantitative research in bibliometrics and scientometrics. It is written in the R language, which is an open-source environment and ecosystem. 
+The bibliometrix R-package (<https://www.bibliometrix.org>) provides a
+set of tools for quantitative research in bibliometrics and
+scientometrics. Today it represents one of the most used science mapping
+software in the world. In a recent survey on bibliometric analysis
+tools, Moral-Muñoz et al. (2020) wrote: “At this moment, maybe
+Bibliometrix and its Shiny platform contain the more extensive set of
+techniques implemented, and together with the easiness of its interface,
+could be a great software for practitioners”.
 
-Today it represents one of the most used science mapping software in the world. In a recent survey on bibliometric analysis tools, Moral-Muñoz et al. (2020) wrote: “At this moment, maybe Bibliometrix and its Shiny platform contain the more extensive set of techniques implemented, and together with the easiness of its interface, could be a great software for practitioners”.
+The function **oa2bibliometrix** converts a bibliographic data frame of
+works into a bibliometrix object. This object can be used as input
+collection of a science mapping workflow.
 
-The function **oa2bibliometrix** converts a bibliographic data frame of works into a bibliometrix object. This object can be used as input collection of a science mapping workflow.
+``` r
+bib_ls <- list(
+  identifier = NULL,
+  entity = "works",
+  cites = "W2755950973",
+  from_publication_date = "2022-01-01",
+  to_publication_date = "2022-03-31"
+)
 
-
-```{r}
-query1 <- oaQueryBuild(
- identifier=NULL,
- entity = "works",
- filter = "cites:W2755950973",
- date_from = "2022-01-01",
- date_to = "2022-03-31",
- sort=NULL)
-
-res1 <- oaApiRequest(
-    query_url = query1,
-    total.count = TRUE,
-    verbose = FALSE
-    )
+do.call(oa_fetch, c(bib_ls, list(count_only = TRUE)))
+#>               count db_response_time_ms                page            per_page 
+#>                 226                  56                   1                 200
+do.call(oa_fetch, bib_ls) %>% 
+  oa2bibliometrix() %>% 
+  dplyr::glimpse()
+#> Rows: 226
+#> Columns: 43
+#> $ AU               <chr> "", "", "", "", "", "", "", "", "", "", "", "", "", "…
+#> $ RP               <chr> "DEPARTMENT OF FORESTRY AND NATURAL RESOURCES, PURDUE…
+#> $ C1               <chr> "DEPARTMENT OF FORESTRY AND NATURAL RESOURCES, PURDUE…
+#> $ AU_UN            <chr> "", "", "", "", "", "", "", "", "", "", "", "", "", "…
+#> $ AU_CO            <chr> "USA;USA;USA", "ITALY;ITALY;ITALY;MALAYSIA", "INDIA;I…
+#> $ ID               <chr> "ORGANISM;DAPHNIA;NANOTOXICOLOGY;DAPHNIA MAGNA;ECOTOX…
+#> $ id_url           <chr> "https://openalex.org/W3212020496", "https://openalex…
+#> $ display_name     <chr> "Emerging trends in nanoparticle toxicity and the sig…
+#> $ author           <list> [<data.frame[3 x 10]>], [<data.frame[4 x 10]>], [<da…
+#> $ ab               <chr> "Nanoparticle production is on the rise due to its ma…
+#> $ publication_date <chr> "2022-03-01", "2022-01-10", "2022-01-10", "2022-02-22…
+#> $ relevance_score  <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…
+#> $ so               <chr> "Chemosphere", "British Food Journal", "Journal of ho…
+#> $ so_id            <chr> "https://openalex.org/V203465130", "https://openalex.…
+#> $ publisher        <chr> "Elsevier", "Emerald (MCB UP)", "Emerald (MCB UP)", "…
+#> $ issn             <list> <"0045-6535", "1879-1298">, <"0007-070X", "1758-4108…
+#> $ url              <chr> "https://doi.org/10.1016/j.chemosphere.2021.132941", …
+#> $ first_page       <chr> "132941", "2239", NA, "2508", "1129", "118420", "125"…
+#> $ last_page        <chr> "132941", "2261", NA, "2508", "1155", "118420", "134"…
+#> $ volume           <chr> "291", "124", NA, "19", "39", "292", "157", NA, "29",…
+#> $ issue            <chr> NA, "7", NA, "5", "6", NA, NA, NA, "2", NA, NA, NA, N…
+#> $ is_oa            <lgl> FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, …
+#> $ cited_by_count   <int> 6, 6, 6, 6, 6, 5, 5, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3,…
+#> $ counts_by_year   <list> [<data.frame[1 x 2]>], [<data.frame[1 x 2]>], [<data…
+#> $ publication_year <int> 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022,…
+#> $ cited_by_api_url <chr> "https://api.openalex.org/works?filter=cites:W3212020…
+#> $ ids              <list> [<tbl_df[4 x 2]>], [<tbl_df[2 x 2]>], [<tbl_df[2 x 2…
+#> $ doi              <chr> "https://doi.org/10.1016/j.chemosphere.2021.132941", …
+#> $ type             <chr> "journal-article", "journal-article", "journal-articl…
+#> $ referenced_works <list> <"https://openalex.org/W321855510", "https://openale…
+#> $ related_works    <list> <"https://openalex.org/W2040538662", "https://openal…
+#> $ concepts         <list> [<data.frame[13 x 5]>], [<data.frame[8 x 5]>], [<dat…
+#> $ id_oa            <chr> "W3212020496", "W4205146162", "W4206031355", "W421477…
+#> $ CR               <chr> "https://openalex.org/W321855510;https://openalex.org…
+#> $ TI               <chr> "EMERGING TRENDS IN NANOPARTICLE TOXICITY AND THE SIG…
+#> $ AB               <chr> "NANOPARTICLE PRODUCTION IS ON THE RISE DUE TO ITS MA…
+#> $ SO               <chr> "CHEMOSPHERE", "BRITISH FOOD JOURNAL", "JOURNAL OF HO…
+#> $ DT               <chr> "JOURNAL-ARTICLE", "JOURNAL-ARTICLE", "JOURNAL-ARTICL…
+#> $ DB               <chr> "openalex", "openalex", "openalex", "openalex", "open…
+#> $ JI               <chr> "V203465130", "V99313352", "V4210226067", "V15239247"…
+#> $ J9               <chr> "V203465130", "V99313352", "V4210226067", "V15239247"…
+#> $ SR_FULL          <chr> "NA, , V203465130", "NA, , V99313352", "NA, , V421022…
+#> $ SR               <chr> "NA, , V203465130", "NA, , V99313352", "NA, , V421022…
 ```
 
-This query will return a collection of:
-```{r}
-cat(res1$count, "publications")
+# About OpenAlex
 
-## 166 publications
-```
+![oar-img](man/figures/oar.jpeg)
 
-Let's to download it:
+<div style="text-align: right">
 
-```{r}
-res1 <- oaApiRequest(
-    query_url = query1,
-    total.count = FALSE,
-    verbose = FALSE
-    )
-```
+Schema credits: [@dhimmel](https://github.com/dhimmel)
 
-Convert it into a data frame:
+</div>
 
-```{r}
-df <- oa2df(res1, entity = "works")
-```
+[OpenAlex](https://openalex.org) is a fully open catalog of the global
+research system. It’s named after the ancient [Library of
+Alexandria](https://en.wikipedia.org/wiki/Library_of_Alexandria). The
+OpenAlex dataset describes scholarly entities and how those entities are
+connected to each other. There are five types of entities:
 
-and then into a bibliometrix object:
+-   **Works** are papers, books, datasets, etc; they cite other works
 
-```{r}
-M <- oa2bibliometrix(df)
+-   **Authors** are people who create works
 
-dplyr::glimpse(M)
+-   **Venues** are journals and repositories that host works
 
-# Rows: 166
-# Columns: 37
-# $ AU            <chr> "CHENG WANG;TAO LV;RONGJIANG CAI;JIANFENG XU;LIYA WANG", "GIANLUCA ELIA;VALERIA STEFANEL…
-# $ RP            <chr> "SCHOOL OF ECONOMICS AND MANAGEMENT, CHINA UNIVERSITY OF MINING AND TECHNOLOGY, XUZHOU 2…
-# $ C1            <chr> "SCHOOL OF ECONOMICS AND MANAGEMENT, CHINA UNIVERSITY OF MINING AND TECHNOLOGY, XUZHOU 2…
-# $ AU_UN         <chr> "CHINA UNIVERSITY OF MINING AND TECHNOLOGY;CHINA UNIVERSITY OF MINING AND TECHNOLOGY;CHI…
-# $ AU_CO         <chr> "CHINA;CHINA;CHINA;CHINA;NA", "ITALY;NA;NA", "SOUTH KOREA;SOUTH KOREA;NA;NA;SOUTH KOREA;…
-# $ ID            <chr> "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", …
-# $ id_url        <chr> "https://openalex.org/W4220662981", "https://openalex.org/W4220731660", "https://openale…
-# $ TI            <chr> "BIBLIOMETRIC ANALYSIS OF MULTI-LEVEL PERSPECTIVE ON SUSTAINABILITY TRANSITION RESEARCH"…
-# $ author        <list> [<data.frame[5 x 10]>], [<data.frame[3 x 10]>], [<data.frame[6 x 10]>], [<data.frame[3 …
-# $ AB            <chr> "THE MULTI-LEVEL PERSPECTIVE (MLP) IS A PROMINENT FRAMEWORK FOR TRANSITION RESEARCH. HOW…
-# $ pubdata       <chr> "2022-03-31", "2022-03-31", "2022-03-31", "2022-03-29", "2022-03-29", "2022-03-29", "202…
-# $ SO            <chr> "SUSTAINABILITY", "EUROPEAN JOURNAL OF INNOVATION MANAGEMENT", "INTERNATIONAL JOURNAL OF…
-# $ SO_ID         <chr> "https://openalex.org/V10134376", "https://openalex.org/V90149737", "https://openalex.or…
-# $ PU            <chr> "MDPI AG", "Emerald (MCB UP)", "MDPI AG", "Emerald (MCB UP)", "Frontiers Media SA", "MDP…
-# $ IS            <list> "2071-1050", <"1460-1060", "1758-7115">, <"1661-7827", "1660-4601">, <"1758-4094", "146…
-# $ URL           <chr> "https://doi.org/10.3390/su14074145", "https://doi.org/10.1108/ejim-12-2021-0608", "http…
-# $ first_page    <chr> "4145", NA, "4165", NA, NA, "1073", "1082", NA, NA, NA, "1697", "796", NA, NA, NA, NA, N…
-# $ last_page     <chr> "4145", NA, "4165", NA, NA, "1073", "1082", NA, NA, NA, "1697", "796", NA, NA, NA, NA, N…
-# $ volume        <chr> "14", NA, "19", NA, NA, "14", "14", NA, NA, NA, "14", "12", NA, NA, "ahead-of-print", NA…
-# $ issue         <chr> "7", NA, "7", NA, NA, "7", "7", NA, NA, NA, "7", "4", NA, NA, "ahead-of-print", NA, NA, …
-# $ OA            <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, T…
-# $ TC            <int> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
-# $ TCperYear     <list> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-# $ PY            <int> 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022…
-# $ cited_by_url  <chr> "https://api.openalex.org/works?filter=cites:W4220662981", "https://api.openalex.org/wor…
-# $ ids           <list> [[<data.frame[4 x 2]>]], [[<data.frame[4 x 2]>]], [[<data.frame[4 x 2]>]], [[<data.fram…
-# $ DI            <chr> "https://doi.org/10.3390/su14074145", "https://doi.org/10.1108/ejim-12-2021-0608", "http…
-# $ DT            <chr> "JOURNAL-ARTICLE", "JOURNAL-ARTICLE", "JOURNAL-ARTICLE", "JOURNAL-ARTICLE", "JOURNAL-ART…
-# $ CR            <chr> "https://openalex.org/W1902979073;https://openalex.org/W2571401218;https://openalex.org/…
-# $ related_works <list> <"https://openalex.org/W2578464", "https://openalex.org/W10946432", "https://openalex.o…
-# $ concept       <list> <NULL>, <NULL>, <NULL>, <NULL>, <NULL>, <NULL>, <NULL>, <NULL>, <NULL>, <NULL>, <NULL>,…
-# $ id_oa         <chr> "W4220662981", "W4220731660", "W4220971062", "W4220712303", "W4220875257", "W4220962167"…
-# $ DB            <chr> "openalex", "openalex", "openalex", "openalex", "openalex", "openalex", "openalex", "ope…
-# $ JI            <chr> "V10134376", "V90149737", "V15239247", "V20489460", "V2597052008", "V134216166", "V13421…
-# $ J9            <chr> "V10134376", "V90149737", "V15239247", "V20489460", "V2597052008", "V134216166", "V13421…
-# $ SR_FULL       <chr> "CHENG WANG, 2022, V10134376", "GIANLUCA ELIA, 2022, V90149737", "BO-YOUNG YOUN, 2022, V…
-# $ SR            <chr> "CHENG WANG, 2022, V10134376", "GIANLUCA ELIA, 2022, V90149737", "BO-YOUNG YOUN, 2022, V…
-```
+-   **Institutions** are universities and other orgs that are affiliated
+    with works (via authors)
 
+-   **Concepts** *tag* Works with a topic
 
+## Acknowledgements
+
+Package hex was made with [Midjourney](https://www.midjourney.com/home/)
+and thus inherits a [CC BY-NC 4.0
+license](https://creativecommons.org/licenses/by-nc/4.0/legalcode).

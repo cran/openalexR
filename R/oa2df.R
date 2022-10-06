@@ -1,11 +1,17 @@
 #' Convert OpenAlex collection from list to data frame
 #'
 #' It converts bibliographic collections gathered from OpenAlex database \href{https://openalex.org/}{https://openalex.org/} into data frame.
-#' The function converts a collection of records about works, authors, institutions, venues or concepts obtained using \code{oaApiRequest} into a data frame/tibble.
+#' The function converts a collection of records about works, authors, institutions, venues or concepts obtained using \code{oa_request} into a data frame/tibble.
 #'
-#' @param data is a list. data is the output of the function \code{oaApiRequest}.
+#' @param data is a list. data is the output of the function \code{oa_request}.
 #' @param entity is a character. It indicates the scholarly entity of the search. The argument can be equal to
 #' entity = c("works", "authors", "venues", "institutions", "concepts"). The default value is entity = works".
+#' @param abstract Logical. If TRUE, the function returns also the abstract of each item. Default is \code{abstract=TRUE}.
+#' The argument is ignored if entity is different from "works".
+#' @param count_only Logical. If TRUE, the function returns only the number of item matching the query. Default is \code{count_only=FALSE}.
+#' @param group_by Character. Property to group by.
+#' For example: "oa_status" for works.
+#' https://docs.openalex.org/api/get-groups-of-entities
 #' @param verbose is a logical. If TRUE, information about the querying process will be plotted on screen. Default is \code{verbose=TRUE}.
 #' @return a data.frame.
 #'
@@ -13,7 +19,6 @@
 #'
 #'
 #' @examples
-#'
 #' \dontrun{
 #'
 #' # Query to search all works citing the article:
@@ -26,53 +31,36 @@
 #'
 #' #  Results have to be sorted by relevance score in a descending order.
 #'
-#' query <- oaQueryBuild(
-#' identifier=NULL,
-#' entity = "works",
-#' filter = "cites:W2755950973",
-#' date_from = "2021-01-01",
-#' date_to = "2021-12-31",
-#' search = NULL,
-#' sort="relevance_score:desc",
-#' endpoint = "https://api.openalex.org/")
+#' query <- oa_query(
+#'   entity = "works",
+#'   cites = "W2755950973",
+#'   from_publication_date = "2021-01-01",
+#'   to_publication_date = "2021-04-30"
+#' )
 #'
-#' res <- oaApiRequest(
-#'    query_url = query,
-#'    total.count = FALSE,
-#'    verbose = FALSE
-#'    )
+#' res <- oa_request(
+#'   query_url = query,
+#'   count_only = FALSE,
+#'   verbose = FALSE
+#' )
 #'
-#' df <- oa2df(res, entity="works")
-#'
-#' df
+#' oa2df(res, entity = "works")
 #'
 #' }
 #'
 #' @export
-oa2df <- function(data, entity="works", verbose = TRUE){
-  entity_list = c("works", "authors", "venues", "institutions", "concepts")
-  if (!(entity %in% entity_list)){
-    message('Please choose one of the following entity type: "works", "authors", "venues", "institutions", "concepts"')
-    return()
+oa2df <- function(data, entity, abstract = TRUE, count_only = FALSE, group_by = NULL, verbose = TRUE) {
+  if (!is.null(group_by)){
+    return(do.call(rbind.data.frame, data))
   }
+
+  if (count_only && length(data) == 4) return(unlist(data))
+
   switch(entity,
-         works={
-           df <- oaWorks2df(data, verbose)
-         },
-         authors={
-           df <- oaAuthors2df(data, verbose)
-         },
-         institutions={
-           df <- oaInstitutions2df(data, verbose)
-         },
-         venues={
-           df <- oaVenues2df(data, verbose)
-         },
-         concepts={
-           df <- oaConcepts2df(data, verbose)
-         }
+    works = oaWorks2df(data, abstract, verbose),
+    authors = oaAuthors2df(data, verbose),
+    institutions = oaInstitutions2df(data, verbose),
+    venues = oaVenues2df(data, verbose),
+    concepts = oaConcepts2df(data, verbose)
   )
-
 }
-
-
