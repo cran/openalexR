@@ -59,7 +59,8 @@ id_type <- function(identifier) {
     A = "authors",
     V = "venues",
     I = "institutions",
-    C = "concepts"
+    C = "concepts",
+    NA
   )
 }
 
@@ -72,4 +73,23 @@ oa_progress <- function(n, text = "converting") {
     format = paste(" ", text, "[:bar] :percent eta: :eta"),
     total = n, clear = FALSE, width = 60
   )
+}
+
+asl <- function(z) {
+  if (length(z) > 1) return(z)
+
+  z_low <- tolower(z)
+  if (z_low == "true" || z_low == "false") {
+    return(z_low)
+  } else {
+    return(z)
+  }
+}
+
+shorten_oaid <- function(id) {
+  gsub("^https://openalex.org/", "", id)
+}
+
+shorten_orcid <- function(id) {
+  gsub("^https://orcid.org/", "", id)
 }

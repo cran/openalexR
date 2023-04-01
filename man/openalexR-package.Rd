@@ -8,23 +8,29 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-A set of tools to extract bibliographic content from 'OpenAlex' database using API \url{https://docs.openalex.org/api/}.
+A set of tools to extract bibliographic content from 'OpenAlex' database using API \url{https://docs.openalex.org}.
 }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/massimoaria/openalexR}
-  \item \url{https://massimoaria.github.io/openalexR/}
-  \item Report bugs at \url{https://github.com/massimoaria/openalexR/issues}
+  \item \url{https://github.com/ropensci/openalexR}
+  \item \url{https://docs.ropensci.org/openalexR/}
+  \item Report bugs at \url{https://github.com/ropensci/openalexR/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Massimo Aria \email{massimo.aria@gmail.com} (\href{https://orcid.org/0000-0002-8517-9411}{ORCID}) [copyright holder]
+\strong{Maintainer}: Massimo Aria \email{aria@unina.it} (\href{https://orcid.org/0000-0002-8517-9411}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
   \item Trang Le \email{grixor@gmail.com} (\href{https://orcid.org/0000-0003-3737-6565}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item Corrado Cuccurullo \email{cuccurullocorrado@gmail.com} (\href{https://orcid.org/0000-0002-7401-8575}{ORCID}) [contributor]
+  \item June Choe \email{jchoe001@gmail.com} (\href{https://orcid.org/0000-0002-0701-921X}{ORCID}) [contributor]
 }
 
 }

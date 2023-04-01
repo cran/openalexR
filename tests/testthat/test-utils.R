@@ -11,3 +11,27 @@ test_that("append_flt works", {
     "title.search:bibliometric analysis|science mapping"
   )
 })
+
+test_that("asl works", {
+  expect_equal(asl("true"), "true")
+  expect_equal(asl(TRUE), "true")
+  expect_equal(asl("True"), "true")
+  expect_equal(asl("TRue"), "true")
+
+  expect_equal(asl("false"), "false")
+  expect_equal(asl(FALSE), "false")
+  expect_equal(asl("FalSE"), "false")
+
+  expect_equal(asl(89), 89)
+  expect_equal(asl("TRUEFA"), "TRUEFA")
+})
+
+test_that("shorten_oaid works", {
+  c(
+    "https://openalex.org/W3045921891",
+    "https://openalex.org/W3046863325",
+    "W3045921891"
+  ) |>
+    shorten_oaid() |>
+    expect_equal(c("W3045921891", "W3046863325", "W3045921891"))
+})
