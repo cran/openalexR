@@ -4,7 +4,7 @@ test_that("Invalid filter errors out", {
   # open_alex is not a valid filter
   query_url <- paste0(
     "https://api.openalex.org/authors?",
-    "filter=open_alex%3AA923435168%7CA2208157607"
+    "filter=open_alex%3AA5069892096%7CA5023888391"
   )
 
   expect_error(oa_request(query_url))
@@ -15,7 +15,7 @@ test_that("oa_request returns list", {
 
   query_url <- paste0(
     "https://api.openalex.org/authors?",
-    "filter=openalex%3AA923435168%7CA2208157607"
+    "filter=openalex%3AA5069892096%7CA5023888391"
   )
 
   expect_type(oa_request(query_url), "list")
@@ -118,9 +118,15 @@ test_that("oa_fetch sample works", {
 
   expect_equal(nrow(random2021), 20)
   expect_equal(nrow(random10), 10)
-  expect_error(oa_fetch("works", search = "open science", options = list(sample = 10)))
 })
 
+
+test_that("search works with sampling", {
+  skip_on_cran()
+
+  w <- oa_fetch("works", search = "open science", options = list(sample = 5))
+  expect_equal(nrow(w), 5)
+})
 
 test_that("oa_fetch authors can deal with NA institutions", {
   skip_on_cran()
@@ -299,6 +305,8 @@ test_that("oa_fetch other entities works", {
 })
 
 test_that("paging works with sample", {
+  skip_on_cran()
+
   w <- oa_fetch(
     "works",
     from_publication_date = Sys.Date() - 2,
@@ -311,6 +319,8 @@ test_that("paging works with sample", {
 })
 
 test_that("oa_fetch works for funders", {
+  skip_on_cran()
+
   s <- oa_fetch("funders", country_code = "ca", cited_by_count = ">100000")
   expect_s3_class(s, "data.frame")
   expect_equal(ncol(s), 17)
@@ -318,6 +328,8 @@ test_that("oa_fetch works for funders", {
 })
 
 test_that("oa_fetch works for sources", {
+  skip_on_cran()
+
   s <- oa_fetch(entity = "sources", search = "nature")
   expect_s3_class(s, "data.frame")
   expect_equal(ncol(s), 27)
@@ -325,6 +337,8 @@ test_that("oa_fetch works for sources", {
 })
 
 test_that("oa_fetch works for publishers", {
+  skip_on_cran()
+
   s <- oa_fetch(entity = "publishers", country_codes = "ca")
   expect_s3_class(s, "data.frame")
   expect_equal(ncol(s), 19)
@@ -332,6 +346,8 @@ test_that("oa_fetch works for publishers", {
 })
 
 test_that("oa_fetch works with 1 identifier", {
+  skip_on_cran()
+
   w <- oa_fetch(identifier = "W3046863325") # Work
   a <- oa_fetch(identifier = "A5023888391") # Author
   i <- oa_fetch(identifier = "I4200000001") # Institution
@@ -359,6 +375,8 @@ test_that("oa_fetch works with 1 identifier", {
 })
 
 test_that("oa_fetch for identifiers works with options", {
+  skip_on_cran()
+
   i <- oa_fetch(
     identifier = "I201448701",
     options = list(select = c("ids", "country_code"))
@@ -371,4 +389,59 @@ test_that("oa_fetch for identifiers works with options", {
 
   expect_equal(dim(i), c(1, 2))
   expect_equal(dim(a), c(1, 3))
+})
+
+test_that("different paging methods yield the same result", {
+  skip_on_cran()
+
+  w0 <- oa_fetch(
+    entity = "works",
+    title.search = c("bibliometric analysis", "science mapping"),
+    cited_by_count = ">50",
+    options = list(select = "id"),
+    from_publication_date = "2021-01-01",
+    to_publication_date = "2021-12-31",
+    verbose = TRUE
+  )
+
+  w24 <- oa_fetch(
+    entity = "works",
+    title.search = c("bibliometric analysis", "science mapping"),
+    cited_by_count = ">50",
+    from_publication_date = "2021-01-01",
+    to_publication_date = "2021-12-31",
+    options = list(select = "id"),
+    pages = c(2, 4:5),
+    per_page = 10,
+    verbose = TRUE
+  )
+  expect_equal(
+    w0[c(11:20, 31:min(50, nrow(w0))), ],
+    w24
+  )
+
+
+
+})
+
+test_that("pages works", {
+  skip_on_cran()
+
+  # The last 10 pages when per_page = 20
+  # should be the same as the 10 pages when fetching page 2
+  w1 <- oa_fetch(
+    search = "transformative change",
+    options = list(select = c("id", "display_name", "publication_date")),
+    pages = 1,
+    per_page = 20,
+    verbose = TRUE
+  )
+  w2 <- oa_fetch(
+    search = "transformative change",
+    options = list(select = c("id", "display_name", "publication_date")),
+    pages = 2,
+    per_page = 10,
+    verbose = TRUE
+  )
+  expect_equal(w1[11:20,], w2)
 })

@@ -1,8 +1,13 @@
-# openalexR (development version)
+# openalexR 1.2.3
+* Breaking change: two arguments in `oa_snowball` are renamed:
+citing_filter is now citing_params,
+and cited_by_filter is now cited_by_params.
+* improve `oa_snowball` performance
+* allowed the use of `options$sample` with `search`
 
 # openalexR 1.2.2
 * solved issue with CRAN test
-
+* 
 # openalexR 1.2.1
 * many improvements in bibliometrix support
 * solved issue with CRAN test

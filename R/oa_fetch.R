@@ -14,7 +14,7 @@ oa_entities <- function() {
 #' @inheritParams oa_query
 #' @inheritParams oa_request
 #' @param abstract Logical. If TRUE, the function returns also the abstract of each item.
-#' Default to \code{abstract = FALSE}.
+#' Default to \code{abstract = TRUE}.
 #' The argument is ignored if entity is different from "works".
 #' @param output Character. Type of output, either a list or a tibble/data.frame.
 #'
@@ -53,7 +53,7 @@ oa_entities <- function() {
 #' )
 #'
 #' oa_fetch(
-#'   identifier = c("A923435168", "A2208157607"),
+#'   identifier = c("A5069892096", "A5023888391"),
 #'   verbose = TRUE
 #' )
 #' }
@@ -67,6 +67,8 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
                      abstract = TRUE,
                      endpoint = "https://api.openalex.org",
                      per_page = 200,
+                     paging = NULL,
+                     pages = NULL,
                      count_only = FALSE,
                      mailto = oa_email(),
                      api_key = oa_apikey(),
@@ -96,7 +98,9 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
 
   if (!is.null(options$sample) && (options$sample > per_page)) {
     paging <- "page"
-  } else {
+  } else if (!is.null(options$page)){
+    paging <- "page"
+  } else if (is.null(paging)){
     paging <- "cursor"
   }
 
@@ -122,6 +126,7 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
       ),
       per_page = per_page,
       paging = paging,
+      pages = pages,
       count_only = count_only,
       mailto = mailto,
       api_key = api_key,
@@ -130,8 +135,15 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
   }
 
   if (length(final_res[[1]]) == 0) { # || is.null(final_res[[1]][[1]]$id)
-    warning("No collection found!")
     return(NULL)
+  }
+
+  if (isTRUE(count_only)) {
+    if (output == "list"){
+      return(unlist(final_res, recursive = FALSE))
+    } else {
+      return(do.call(cbind,final_res))
+    }
   }
 
   if (output == "list") {
@@ -161,6 +173,12 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
 #' Defaults to 200.
 #' @param paging Character.
 #' Either "cursor" for cursor paging or "page" for basic paging.
+#' When used with `options$sample` and or `pages`,
+#' paging is also automatically set to basic paging: `paging = "page"`
+#' to avoid duplicates and get the right page.
+#' See https://docs.openalex.org/how-to-use-the-api/get-lists-of-entities/paging.
+#' @param pages Integer vector.
+#' The range of pages to return. If NULL, return all pages.
 #' @param count_only Logical.
 #' If TRUE, the function returns only the number of item matching the query.
 #' Defaults to FALSE.
@@ -203,11 +221,11 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
 #'   verbose = FALSE
 #' )
 #'
-#' #  The author Massimo Aria is associated to the OpenAlex-id A923435168.
+#' #  The author Massimo Aria is associated to the OpenAlex-id A5069892096.
 #'
 #'
 #' query_author <- oa_query(
-#'   identifier = "A923435168",
+#'   identifier = "A5069892096",
 #'   entity = "authors",
 #'   endpoint = "https://api.openalex.org"
 #' )
@@ -301,6 +319,7 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
 oa_request <- function(query_url,
                        per_page = 200,
                        paging = "cursor",
+                       pages = NULL,
                        count_only = FALSE,
                        mailto = oa_email(),
                        api_key = oa_apikey(),
@@ -335,13 +354,22 @@ oa_request <- function(query_url,
   } else {
     return(res)
   }
+  n_items <- res$meta$count
+  n_pages <- ceiling(n_items / per_page)
 
   ## number of pages
-  n_items <- res$meta$count
-  n_pages <- ceiling(res$meta$count / per_page)
-  pages <- seq.int(n_pages)
+  if (is.null(pages)){
+    pages <- seq.int(n_pages)
+  } else {
+    pages <- pages[pages <= n_pages]
+    n_pages <- length(pages)
+    n_items <- min(n_items - per_page * (utils::tail(pages, 1) - n_pages), per_page * n_pages)
+    message("Using basic paging...")
+    paging <- "page"
+  }
 
-  if (n_items <= 0) {
+  if (n_items <= 0 || n_pages <= 0) {
+    warning("No records found!")
     return(list())
   }
 
@@ -352,22 +380,21 @@ oa_request <- function(query_url,
       "Getting ", n_pages, pg_plural, " of results",
       " with a total of ", n_items, " records..."
     )
+    pb <- oa_progress(n = n_pages, text = "OpenAlex downloading")
   }
-
-  pb <- oa_progress(n = n_pages, text = "OpenAlex downloading")
 
   # Setting items per page
   query_ls[["per-page"]] <- per_page
 
   # Activation of cursor pagination
-  next_page <- get_next_page(paging, 1)
   data <- vector("list", length = n_pages)
+  res <- NULL
   for (i in pages) {
     if (verbose) pb$tick()
     Sys.sleep(1 / 100)
+    next_page <- get_next_page(paging, i, res)
     query_ls[[paging]] <- next_page
     res <- api_request(query_url, ua, query = query_ls)
-    next_page <- get_next_page(paging, i + 1, res)
     if (!is.null(res$results)) data[[i]] <- res$results
   }
 
@@ -438,6 +465,8 @@ get_next_page <- function(paging, i, res = NULL) {
 #' Defaults to endpoint = "https://api.openalex.org".
 #' @param verbose Logical. If TRUE, print information on querying process.
 #' Default to \code{verbose = FALSE}.
+#' To shorten the printed query URL, set the environment variable openalexR.print
+#' to the number of characters to print: \code{Sys.setenv(openalexR.print = 70)}.
 #' @param \dots Additional filter arguments.
 #'
 #' @return a character containing the query in OpenAlex format.
@@ -449,7 +478,7 @@ get_next_page <- function(paging, i, res = NULL) {
 #' @examples
 #' \dontrun{
 #'
-#' query_auth <- oa_query(identifier = "A923435168", verbose = TRUE)
+#' query_auth <- oa_query(identifier = "A5069892096", verbose = TRUE)
 #'
 #' ### EXAMPLE 1: Full record about an entity.
 #'
@@ -467,9 +496,9 @@ get_next_page <- function(paging, i, res = NULL) {
 #' )
 #'
 #'
-#' #  The author Massimo Aria is associated to the OpenAlex-id A923435168:
+#' #  The author Massimo Aria is associated to the OpenAlex-id A5069892096:
 #'
-#' query_auth <- oa_query(identifier = "A923435168", verbose = TRUE)
+#' query_auth <- oa_query(identifier = "A5069892096", verbose = TRUE)
 #'
 #'
 #' ### EXAMPLE 2: all works citing a particular work.
@@ -522,9 +551,6 @@ oa_query <- function(filter = NULL,
                      endpoint = "https://api.openalex.org",
                      verbose = FALSE,
                      ...) {
-  if (!(is.null(search) || is.null(options$sample))) {
-    stop("You can't use `search` and `sample` at the same time. Please specify only one of these two arguments.")
-  }
 
   entity <- match.arg(entity, oa_entities())
   filter <- c(filter, list(...))
@@ -569,7 +595,15 @@ oa_query <- function(filter = NULL,
     query = query
   )
 
-  if (verbose) message("Requesting url: ", query_url)
+  if (is.null(oa_print())){
+    url_display <- query_url
+  } else {
+    query_url <- utils::URLdecode(query_url)
+    query_url_more <- if (oa_print() < nchar(query_url)) "..."
+    url_display <- paste0(substr(query_url, 1, oa_print()), query_url_more)
+  }
+
+  if (verbose) message("Requesting url: ", url_display)
 
   query_url
 }

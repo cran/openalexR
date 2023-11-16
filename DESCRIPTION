@@ -2,7 +2,7 @@ Type: Package
 Package: openalexR
 Title: Getting Bibliographic Records from 'OpenAlex' Database Using
         'DSL' API
-Version: 1.2.2
+Version: 1.2.3
 Authors@R: c(
     person(given = "Massimo",
            family = "Aria",
@@ -40,11 +40,11 @@ RoxygenNote: 7.2.3
 Config/testthat/edition: 3
 Depends: R (>= 2.10)
 NeedsCompilation: no
-Packaged: 2023-09-24 15:13:17 UTC; massimoaria
+Packaged: 2023-11-16 10:17:47 UTC; massimoaria
 Author: Massimo Aria [aut, cre, cph] (<https://orcid.org/0000-0002-8517-9411>),
   Corrado Cuccurullo [ctb] (<https://orcid.org/0000-0002-7401-8575>),
   Trang Le [aut] (<https://orcid.org/0000-0003-3737-6565>),
   June Choe [ctb] (<https://orcid.org/0000-0002-0701-921X>)
 Maintainer: Massimo Aria <aria@unina.it>
 Repository: CRAN
-Date/Publication: 2023-09-24 21:30:02 UTC
+Date/Publication: 2023-11-16 17:10:02 UTC
