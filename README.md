@@ -1,57 +1,85 @@
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # openalexR <img src="man/figures/logo.png" align="right" height="139"/>
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/ropensci/openalexR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ropensci/openalexR/actions/workflows/R-CMD-check.yaml) [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental) [![CRAN status](https://www.r-pkg.org/badges/version/openalexR)](https://CRAN.R-project.org/package=openalexR) [![](http://cranlogs.r-pkg.org/badges/grand-total/openalexR)](https://cran.r-project.org/package=openalexR) [![Codecov test coverage](https://codecov.io/gh/ropensci/openalexR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/ropensci/openalexR?branch=main) [![Status at rOpenSci Software Peer Review](https://badges.ropensci.org/560_status.svg)](https://github.com/ropensci/software-review/issues/560)
+[![R-CMD-check](https://github.com/ropensci/openalexR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ropensci/openalexR/actions/workflows/R-CMD-check.yaml)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/openalexR)](https://CRAN.R-project.org/package=openalexR)
+[![](http://cranlogs.r-pkg.org/badges/grand-total/openalexR)](https://cran.r-project.org/package=openalexR)
+[![Codecov test
+coverage](https://codecov.io/gh/ropensci/openalexR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/ropensci/openalexR?branch=main)
+[![Status at rOpenSci Software Peer
+Review](https://badges.ropensci.org/560_status.svg)](https://github.com/ropensci/software-review/issues/560)
 
 <!-- badges: end -->
 
-**openalexR** helps you interface with the [OpenAlex](https://openalex.org) API to retrieve bibliographic infomation about publications, authors, venues, institutions and concepts with 5 main functions:
+**openalexR** helps you interface with the
+[OpenAlex](https://openalex.org) API to retrieve bibliographic
+information about publications, authors, institutions, sources, funders,
+publishers, topics and concepts with 5 main functions:
 
--   `oa_fetch`: composes three functions below so the user can execute everything in one step, *i.e.*, `oa_query |> oa_request |> oa2df`
+- `oa_fetch`: composes three functions below so the user can execute
+  everything in one step, *i.e.*, `oa_query |> oa_request |> oa2df`
 
--   `oa_query`: generates a valid query, written following the OpenAlex API syntax, from a set of arguments provided by the user.
+- `oa_query`: generates a valid query, written following the OpenAlex
+  API syntax, from a set of arguments provided by the user.
 
--   `oa_request`: downloads a collection of entities matching the query created by `oa_query` or manually written by the user, and returns a JSON object in a list format.
+- `oa_request`: downloads a collection of entities matching the query
+  created by `oa_query` or manually written by the user, and returns a
+  JSON object in a list format.
 
--   `oa2df`: converts the JSON object in classical bibliographic tibble/data frame.
+- `oa2df`: converts the JSON object in classical bibliographic
+  tibble/data frame.
 
--   `oa_random`: get random entity, *e.g.*, `oa_random("works")` gives a different work each time you run it
+- `oa_random`: get random entity, *e.g.*, `oa_random("works")` gives a
+  different work each time you run it
 
 ## 🙌 Support OpenAlex
 
-If OpenAlex has helped you, consider writing a [Testimonial](https://forms.monday.com/forms/4d5ad5a8e6a72ae31987a29118f1d437?r=use1) which will help support the OpenAlex team and show that their work is making a *real and necessary* impact.
+If OpenAlex has helped you, consider writing a
+[Testimonial](https://forms.monday.com/forms/4d5ad5a8e6a72ae31987a29118f1d437?r=use1)
+which will help support the OpenAlex team and show that their work is
+making a *real and necessary* impact.
 
 ## ⚙️ Setup
 
-You can install the developer version of openalexR from [GitHub](https://github.com) with:
+You can install the developer version of openalexR from
+[GitHub](https://github.com) with:
 
 ``` r
 install.packages("remotes")
 remotes::install_github("ropensci/openalexR")
 ```
 
-You can install the released version of openalexR from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of openalexR from
+[CRAN](https://CRAN.R-project.org) with:
 
 ``` r
 install.packages("openalexR")
 ```
 
-Before we go any further, we highly recommend you set `openalexR.mailto` option so that your requests go to [the polite pool](https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication#the-polite-pool) for faster response times. If you have OpenAlex Premium, you can add your API key to the `openalexR.apikey` option as well. These lines best go into `.Rprofile` with `file.edit("~/.Rprofile")`.
+Before we go any further, we highly recommend you set `openalexR.mailto`
+option so that your requests go to [the polite
+pool](https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication#the-polite-pool)
+for faster response times. If you have OpenAlex Premium, you can add
+your API key to the `openalexR.apikey` option as well. These lines best
+go into `.Rprofile` with `file.edit("~/.Rprofile")`.
 
 ``` r
 options(openalexR.mailto = "example@email.com")
 options(openalexR.apikey = "EXAMPLE_APIKEY")
 ```
 
-Alternatively, you can open `.Renviron` with `file.edit("~/.Renviron")` and add:
+Alternatively, you can open `.Renviron` with `file.edit("~/.Renviron")`
+and add:
 
-```         
-openalexR.mailto = example@email.com
-openalexR.apikey = EXAMPLE_APIKEY
-```
+    openalexR.mailto = example@email.com
+    openalexR.apikey = EXAMPLE_APIKEY
 
 ``` r
 library(openalexR)
@@ -61,13 +89,20 @@ library(ggplot2)
 
 ## 🌿 Examples
 
-There are different [filters](https://ropensci.github.io/openalexR/articles/Filters)/arguments you can use in `oa_fetch`, depending on which [entity](https://docs.openalex.org/#data) you're interested in: works, authors, venues, institutions, or concepts. We show a few examples below.
+There are different
+[filters](https://ropensci.github.io/openalexR/articles/Filters)/arguments
+you can use in `oa_fetch`, depending on which
+[entity](https://docs.openalex.org/#data) you’re interested in: works,
+authors, sources, funders, institutions, or concepts. We show a few
+examples below.
 
 ### 📚 Works
 
-**Goal**: Download all information about a givens set of publications (known DOIs).
+**Goal**: Download all information about a givens set of publications
+(known DOIs).
 
-Use `doi` as a [works filter](https://ropensci.github.io/openalexR/articles/Filters.html#works):
+Use `doi` as a [works
+filter](https://ropensci.github.io/openalexR/articles/Filters.html#works):
 
 ``` r
 works_from_dois <- oa_fetch(
@@ -79,9 +114,15 @@ works_from_dois <- oa_fetch(
 #> Getting 1 page of results with a total of 2 records...
 ```
 
-We can view the output tibble/dataframe, `works_from_dois`, interactively in RStudio or inspect it with base functions like `str` or `head`. We also provide the experimental `show_works` function to simplify the result (e.g., remove some columns, keep first/last author) for easy viewing.
+We can view the output tibble/dataframe, `works_from_dois`,
+interactively in RStudio or inspect it with base functions like `str` or
+`head`. We also provide the experimental `show_works` function to
+simplify the result (e.g., remove some columns, keep first/last author)
+for easy viewing.
 
-*Note*: the following table is wrapped in `knitr::kable()` to be displayed nicely in this README, but you will most likely not need this function.
+*Note*: the following table is wrapped in `knitr::kable()` to be
+displayed nicely in this README, but you will most likely not need this
+function.
 
 ``` r
 # str(works_from_dois, max.level = 2)
@@ -95,12 +136,14 @@ works_from_dois |>
 
 | id          | display_name                                                              | first_author      | last_author        | so                      | url                                         | is_oa | top_concepts                          |
 |:------------|:--------------------------------------------------------------------------|:------------------|:-------------------|:------------------------|:--------------------------------------------|:------|:--------------------------------------|
-| W2755950973 | bibliometrix : An R-tool for comprehensive science mapping analysis       | Massimo Aria      | Corrado Cuccurullo | Journal of Informetrics | <https://doi.org/10.1016/j.joi.2017.08.007> | FALSE | Workflow, Bibliometrics, Software     |
+| W2755950973 | bibliometrix : An R-tool for comprehensive science mapping analysis       | Massimo Aria      | Corrado Cuccurullo | Journal of informetrics | <https://doi.org/10.1016/j.joi.2017.08.007> | FALSE | Workflow, Bibliometrics, Software     |
 | W2038196424 | Coverage and adoption of altmetrics sources in the bibliometric community | Stefanie Haustein | Jens Terliesner    | Scientometrics          | <https://doi.org/10.1007/s11192-013-1221-3> | FALSE | Altmetrics, Bookmarking, Social media |
 
-**Goal**: Download all works published by a set of authors (known ORCIDs).
+**Goal**: Download all works published by a set of authors (known
+ORCIDs).
 
-Use `author.orcid` as a filter (either canonical form with <https://orcid.org/> or without will work):
+Use `author.orcid` as a filter (either canonical form with
+<https://orcid.org/> or without will work):
 
 ``` r
 works_from_orcids <- oa_fetch(
@@ -109,23 +152,32 @@ works_from_orcids <- oa_fetch(
   verbose = TRUE
 )
 #> Requesting url: https://api.openalex.org/works?filter=author.orcid%3A0000-0001-6187-6610%7C0000-0002-8517-9411
-#> Getting 2 pages of results with a total of 229 records...
+#> Getting 2 pages of results with a total of 252 records...
+#> Warning in oa_request(oa_query(filter = filter_i, multiple_id = multiple_id, : 
+#> The following work(s) have truncated lists of authors: W4230863633.
+#> Query each work separately by its identifier to get full list of authors.
+#> For example:
+#>   lapply(c("W4230863633"), \(x) oa_fetch(identifier = x))
+#> Details at https://docs.openalex.org/api-entities/authors/limitations.
 
 works_from_orcids |>
   show_works() |>
   knitr::kable()
 ```
 
-| id          | display_name                                                                                 | first_author      | last_author            | so                                                                    | url                                            | is_oa | top_concepts                          |
-|:------------|:---------------------------------------------------------------------------------------------|:------------------|:-----------------------|:----------------------------------------------------------------------|:-----------------------------------------------|:------|:--------------------------------------|
-| W2755950973 | bibliometrix : An R-tool for comprehensive science mapping analysis                          | Massimo Aria      | Corrado Cuccurullo     | Journal of Informetrics                                               | <https://doi.org/10.1016/j.joi.2017.08.007>    | FALSE | Workflow, Bibliometrics, Software     |
-| W2741809807 | The state of OA: a large-scale analysis of the prevalence and impact of Open Access articles | Heather Piwowar   | Stefanie Haustein      | PeerJ                                                                 | <https://doi.org/10.7717/peerj.4375>           | TRUE  | Citation, License, Open science       |
-| W2122130843 | Scientometrics 2.0: New metrics of scholarly impact on the social Web                        | Jason Priem       | Bradely H. Hemminger   | First Monday                                                          | <https://doi.org/10.5210/fm.v15i7.2874>        | FALSE | Bookmarking, Altmetrics, Social media |
-| W2041540760 | How and why scholars cite on Twitter                                                         | Jason Priem       | Kaitlin Light Costello | Proceedings of the Association for Information Science and Technology | <https://doi.org/10.1002/meet.14504701201>     | TRUE  | Citation, Conversation, Social media  |
-| W2038196424 | Coverage and adoption of altmetrics sources in the bibliometric community                    | Stefanie Haustein | Jens Terliesner        | Scientometrics                                                        | <https://doi.org/10.1007/s11192-013-1221-3>    | FALSE | Altmetrics, Bookmarking, Social media |
-| W2396414759 | The Altmetrics Collection                                                                    | Jason Priem       | Dario Taraborelli      | PLOS ONE                                                              | <https://doi.org/10.1371/journal.pone.0048753> | TRUE  | Altmetrics                            |
+| id          | display_name                                                                                                                              | first_author       | last_author          | so                      | url                                            | is_oa | top_concepts                                                    |
+|:------------|:------------------------------------------------------------------------------------------------------------------------------------------|:-------------------|:---------------------|:------------------------|:-----------------------------------------------|:------|:----------------------------------------------------------------|
+| W2755950973 | bibliometrix : An R-tool for comprehensive science mapping analysis                                                                       | Massimo Aria       | Corrado Cuccurullo   | Journal of informetrics | <https://doi.org/10.1016/j.joi.2017.08.007>    | FALSE | Workflow, Bibliometrics, Software                               |
+| W2741809807 | The state of OA: a large-scale analysis of the prevalence and impact of Open Access articles                                              | Heather Piwowar    | Stefanie Haustein    | PeerJ                   | <https://doi.org/10.7717/peerj.4375>           | TRUE  | Citation, License, Bibliometrics                                |
+| W2122130843 | Scientometrics 2.0: New metrics of scholarly impact on the social Web                                                                     | Jason Priem        | Bradely H. Hemminger | First Monday            | <https://doi.org/10.5210/fm.v15i7.2874>        | FALSE | Bookmarking, Altmetrics, Social media                           |
+| W2038196424 | Coverage and adoption of altmetrics sources in the bibliometric community                                                                 | Stefanie Haustein  | Jens Terliesner      | Scientometrics          | <https://doi.org/10.1007/s11192-013-1221-3>    | FALSE | Altmetrics, Bookmarking, Social media                           |
+| W2396414759 | The Altmetrics Collection                                                                                                                 | Jason Priem        | Dario Taraborelli    | PloS one                | <https://doi.org/10.1371/journal.pone.0048753> | TRUE  | Social media, Citation, Altmetrics                              |
+| W2408216567 | Foundations and trends in performance management. A twenty-five years bibliometric analysis in business and public administration domains | Corrado Cuccurullo | Fabrizia Sarto       | Scientometrics          | <https://doi.org/10.1007/s11192-016-1948-8>    | FALSE | Domain (mathematical analysis), Content analysis, Public domain |
 
-**Goal**: Download all works that have been cited more than 50 times, published between 2020 and 2021, and include the strings "bibliometric analysis" or "science mapping" in the title. Maybe we also want the results to be sorted by total citations in a descending order.
+**Goal**: Download all works that have been cited more than 50 times,
+published between 2020 and 2021, and include the strings “bibliometric
+analysis” or “science mapping” in the title. Maybe we also want the
+results to be sorted by total citations in a descending order.
 
 ``` r
 works_search <- oa_fetch(
@@ -138,7 +190,7 @@ works_search <- oa_fetch(
   verbose = TRUE
 )
 #> Requesting url: https://api.openalex.org/works?filter=title.search%3Abibliometric%20analysis%7Cscience%20mapping%2Ccited_by_count%3A%3E50%2Cfrom_publication_date%3A2020-01-01%2Cto_publication_date%3A2021-12-31&sort=cited_by_count%3Adesc
-#> Getting 1 page of results with a total of 142 records...
+#> Getting 2 pages of results with a total of 221 records...
 
 works_search |>
   show_works() |>
@@ -147,18 +199,21 @@ works_search |>
 
 | id          | display_name                                                                                                                  | first_author        | last_author        | so                                        | url                                             | is_oa | top_concepts                                                  |
 |:------------|:------------------------------------------------------------------------------------------------------------------------------|:--------------------|:-------------------|:------------------------------------------|:------------------------------------------------|:------|:--------------------------------------------------------------|
-| W3160856016 | How to conduct a bibliometric analysis: An overview and guidelines                                                            | Naveen Donthu       | Weng Marc Lim      | Journal of Business Research              | <https://doi.org/10.1016/j.jbusres.2021.04.070> | TRUE  | Bibliometrics, Field (mathematics), Resource (disambiguation) |
-| W3038273726 | Investigating the emerging COVID-19 research trends in the field of business and management: A bibliometric analysis approach | Surabhi Verma       | Anders Gustafsson  | Journal of Business Research              | <https://doi.org/10.1016/j.jbusres.2020.06.057> | TRUE  | Bibliometrics, Field (mathematics), Empirical research        |
-| W2990450011 | Forty-five years of Journal of Business Research: A bibliometric analysis                                                     | Naveen Donthu       | Debidutta Pattnaik | Journal of Business Research              | <https://doi.org/10.1016/j.jbusres.2019.10.039> | FALSE | Publishing, Bibliometrics, Empirical research                 |
-| W3001491100 | Software tools for conducting bibliometric analysis in science: An up-to-date review                                          | José A. Moral-Muñoz | Manuel J. Cobo     | Profesional De La Informacion             | <https://doi.org/10.3145/epi.2020.ene.03>       | TRUE  | Bibliometrics, Visualization, Set (abstract data type)        |
-| W3044902155 | Financial literacy: A systematic review and bibliometric analysis                                                             | Kirti Goyal         | Satish Kumar       | International Journal of Consumer Studies | <https://doi.org/10.1111/ijcs.12605>            | FALSE | Financial literacy, Content analysis, Citation                |
-| W2990688366 | A bibliometric analysis of board diversity: Current status, development, and future research directions                       | H. Kent Baker       | Arunima Haldar     | Journal of Business Research              | <https://doi.org/10.1016/j.jbusres.2019.11.025> | FALSE | Diversity (politics), Ethnic group, Bibliometrics             |
+| W3160856016 | How to conduct a bibliometric analysis: An overview and guidelines                                                            | Naveen Donthu       | Weng Marc Lim      | Journal of business research              | <https://doi.org/10.1016/j.jbusres.2021.04.070> | TRUE  | Bibliometrics, Field (mathematics), Resource (disambiguation) |
+| W3038273726 | Investigating the emerging COVID-19 research trends in the field of business and management: A bibliometric analysis approach | Surabhi Verma       | Anders Gustafsson  | Journal of business research              | <https://doi.org/10.1016/j.jbusres.2020.06.057> | TRUE  | Bibliometrics, Field (mathematics), Empirical research        |
+| W3001491100 | Software tools for conducting bibliometric analysis in science: An up-to-date review                                          | José A. Moral-Muñoz | Manuel J. Cobo     | El Profesional de la información          | <https://doi.org/10.3145/epi.2020.ene.03>       | TRUE  | Bibliometrics, Visualization, Set (abstract data type)        |
+| W2990450011 | Forty-five years of Journal of Business Research: A bibliometric analysis                                                     | Naveen Donthu       | Debidutta Pattnaik | Journal of business research              | <https://doi.org/10.1016/j.jbusres.2019.10.039> | FALSE | Publishing, Bibliometrics, Empirical research                 |
+| W3044902155 | Financial literacy: A systematic review and bibliometric analysis                                                             | Kirti Goyal         | Satish Kumar       | International journal of consumer studies | <https://doi.org/10.1111/ijcs.12605>            | FALSE | Financial literacy, Content analysis, Citation                |
+| W3042215340 | A bibliometric analysis using VOSviewer of publications on COVID-19                                                           | Yuetian Yu          | Erzhen Chen        | Annals of translational medicine          | <https://doi.org/10.21037/atm-20-4235>          | TRUE  | Citation, Bibliometrics, China                                |
 
 ### 🧑 Authors
 
 **Goal**: Download author information when we know their ORCID.
 
-Here, instead of `author.orcid` like earlier, we have to use `orcid` as an argument. This may be a little confusing, but again, a different entity (**authors** instead of **works**) requires a [different set of filters](https://ropensci.github.io/openalexR/articles/Filters.html#authors).
+Here, instead of `author.orcid` like earlier, we have to use `orcid` as
+an argument. This may be a little confusing, but again, a different
+entity (**authors** instead of **works**) requires a [different set of
+filters](https://ropensci.github.io/openalexR/articles/Filters.html#authors).
 
 ``` r
 authors_from_orcids <- oa_fetch(
@@ -173,8 +228,8 @@ authors_from_orcids |>
 
 | id          | display_name | orcid               | works_count | cited_by_count | affiliation_display_name         | top_concepts                             |
 |:------------|:-------------|:--------------------|------------:|---------------:|:---------------------------------|:-----------------------------------------|
-| A5069892096 | Massimo Aria | 0000-0002-8517-9411 |         176 |           5978 | University of Naples Federico II | Statistics, Pathology, Internal medicine |
-| A5023888391 | Jason Priem  | 0000-0001-6187-6610 |          52 |           2163 | OurResearch                      | World Wide Web, Library science, Law     |
+| A5069892096 | Massimo Aria | 0000-0002-8517-9411 |         184 |           7750 | University of Naples Federico II | Statistics, Internal medicine, Pathology |
+| A5023888391 | Jason Priem  | 0000-0001-6187-6610 |          67 |           2532 | OurResearch                      | World Wide Web, Library science, Law     |
 
 **Goal**: Acquire information on the authors of this package.
 
@@ -193,27 +248,28 @@ authors_from_names |>
 
 | id          | display_name | orcid               | works_count | cited_by_count | affiliation_display_name         | top_concepts                             |
 |:------------|:-------------|:--------------------|------------:|---------------:|:---------------------------------|:-----------------------------------------|
-| A5069892096 | Massimo Aria | 0000-0002-8517-9411 |         176 |           5978 | University of Naples Federico II | Statistics, Pathology, Internal medicine |
-| A5023888391 | Jason Priem  | 0000-0001-6187-6610 |          52 |           2163 | OurResearch                      | World Wide Web, Library science, Law     |
+| A5069892096 | Massimo Aria | 0000-0002-8517-9411 |         184 |           7750 | University of Naples Federico II | Statistics, Internal medicine, Pathology |
+| A5023888391 | Jason Priem  | 0000-0001-6187-6610 |          67 |           2532 | OurResearch                      | World Wide Web, Library science, Law     |
 
-**Goal**: Download all authors' records of scholars who work at the [University of Naples Federico II](https://explore.openalex.org/institutions/I71267560) (OpenAlex ID: I71267560) and have published at least 500 publications.
+**Goal**: Download all authors’ records of scholars who work at the
+[University of Naples Federico
+II](https://explore.openalex.org/institutions/I71267560) (OpenAlex ID:
+I71267560) and have published at least 500 publications.
 
-Let's first check how many records match the query, then download the entire collection. We can do this by first defining a list of arguments, then adding `count_only` (default `FALSE`) to this list:
+Let’s first check how many records match the query, then download the
+entire collection. We can do this by first defining a list of arguments,
+then adding `count_only` (default `FALSE`) to this list:
 
 ``` r
 my_arguments <- list(
   entity = "authors",
-  last_known_institution.id = "I71267560",
+  last_known_institutions.id = "I71267560",
   works_count = ">499"
 )
 
 do.call(oa_fetch, c(my_arguments, list(count_only = TRUE)))
-#>                     [,1]
-#> count               20  
-#> db_response_time_ms 109 
-#> page                1   
-#> per_page            1   
-#> groups_count        NULL
+#>      count db_response_time_ms page per_page
+#> [1,]    33                 127    1        1
 
 if (do.call(oa_fetch, c(my_arguments, list(count_only = TRUE)))[1]>0){
 do.call(oa_fetch, my_arguments) |>
@@ -222,20 +278,21 @@ do.call(oa_fetch, my_arguments) |>
 }
 ```
 
-| id          | display_name         | orcid               | works_count | cited_by_count | affiliation_display_name         | top_concepts                                         |
-|:------------|:---------------------|:--------------------|------------:|---------------:|:---------------------------------|:-----------------------------------------------------|
-| A5072318694 | G. Chiefari          | NA                  |         878 |          45134 | University of Naples Federico II | Quantum mechanics, Particle physics, Nuclear physics |
-| A5035636337 | S. Patricelli        | NA                  |         793 |          42464 | University of Naples Federico II | Quantum mechanics, Particle physics, Nuclear physics |
-| A5051324603 | Massimo Chiariello   | NA                  |         738 |          15003 | University of Naples Federico II | Internal medicine, Cardiology, Endocrinology         |
-| A5026402548 | Gabriella Fabbrocini | 0000-0002-0064-1874 |         724 |          10355 | University of Naples Federico II | Dermatology, Internal medicine, Pathology            |
-| A5057084037 | Fabrizio Pane        | 0000-0003-2563-4125 |         707 |          19076 | University of Naples Federico II | Internal medicine, Immunology, Genetics              |
-| A5070034601 | Annamaria Colao      | 0000-0003-4049-2559 |         684 |          26625 | University of Naples Federico II | Internal medicine, Endocrinology, Pathology          |
+| id          | display_name          | orcid               | works_count | cited_by_count | affiliation_display_name         | top_concepts                                         |
+|:------------|:----------------------|:--------------------|------------:|---------------:|:---------------------------------|:-----------------------------------------------------|
+| A5066548119 | D. della Volpe        | 0000-0001-8530-7447 |        1708 |          67588 | University of Naples Federico II | Quantum mechanics, Nuclear physics, Particle physics |
+| A5032217427 | Nicola Longo          | 0000-0002-3677-1216 |        1175 |          12977 | University of Naples Federico II | Internal medicine, Genetics, Pathology               |
+| A5076706548 | Salvatore Capozziello | 0000-0003-4886-2024 |         914 |          34029 | INFN Sezione di Napoli           | Quantum mechanics, Astronomy, Theoretical physics    |
+| A5072318694 | G. Chiefari           | NA                  |         883 |          46442 | INFN Sezione di Napoli           | Quantum mechanics, Particle physics, Nuclear physics |
+| A5064797795 | A. O. M. Iorio        | NA                  |         798 |          46038 | INFN Sezione di Napoli           | Particle physics, Nuclear physics, Quantum mechanics |
+| A5035636337 | S. Patricelli         | NA                  |         795 |          43655 | INFN Sezione di Napoli           | Quantum mechanics, Particle physics, Nuclear physics |
 
 ## 🍒 Example analyses
 
 **Goal**: track the popularity of *Biology* concepts over time.
 
-We first download the records of all level-1 concepts/keywords that concern over one million works:
+We first download the records of all level-1 concepts/keywords that
+concern over one million works:
 
 ``` r
 library(gghighlight)
@@ -268,11 +325,14 @@ concept_df |>
 #> label_key: display_name
 ```
 
-<img src="man/figures/README-biological-concepts-1.png" width="100%"/>
+<img src="man/figures/README-biological-concepts-1.png" width="100%" />
 
 **Goal**: Rank institutions in Italy by total number of citations.
 
-We want download all records regarding Italian institutions (country_code:it) that are classified as educational (type:education). Again, we check how many records match the query then download the collection:
+We want download all records regarding Italian institutions
+(country_code:it) that are classified as educational (type:education).
+Again, we check how many records match the query then download the
+collection:
 
 ``` r
 italy_insts <- oa_fetch(
@@ -282,7 +342,7 @@ italy_insts <- oa_fetch(
   verbose = TRUE
 )
 #> Requesting url: https://api.openalex.org/institutions?filter=country_code%3Ait%2Ctype%3Aeducation
-#> Getting 2 pages of results with a total of 234 records...
+#> Getting 2 pages of results with a total of 232 records...
 
 italy_insts |>
   slice_max(cited_by_count, n = 8) |>
@@ -299,7 +359,7 @@ italy_insts |>
   coord_cartesian(expand = FALSE)
 ```
 
-<img src="man/figures/README-italy-insts-1.png" width="100%"/>
+<img src="man/figures/README-italy-insts-1.png" width="100%" />
 
 And what do they publish on?
 
@@ -325,18 +385,19 @@ wordcloud::wordcloud(
 )
 ```
 
-<img src="man/figures/README-concept-cloud-1.png" width="100%"/>
+<img src="man/figures/README-concept-cloud-1.png" width="100%" />
 
-**Goal**: Visualize big journals' topics.
+**Goal**: Visualize big journals’ topics.
 
-We first download all records regarding journals that have published more than 300,000 works, then visualize their scored concepts:
+We first download all records regarding journals that have published
+more than 300,000 works, then visualize their scored concepts:
 
 ``` r
 # The package ggtext needs to be installed to run this chunk
 # library(ggtext)
 
 jours_all <- oa_fetch(
-  entity = "venues",
+  entity = "sources",
   works_count = ">200000",
   verbose = TRUE
 )
@@ -389,11 +450,18 @@ jours |>
   labs(y = NULL, x = NULL, title = "Journal clocks")
 ```
 
-<img src="man/figures/README-big-journals-1.png" width="100%"/>
+<img src="man/figures/README-big-journals-1.png" width="100%" />
 
 ## ❄️ Snowball search
 
-The user can also perform *snowballing* with `oa_snowball`. Snowballing is a literature search technique where the researcher starts with a set of articles and find articles that cite or were cited by the original set. `oa_snowball` returns a list of 2 elements: *nodes* and *edges*. Similar to `oa_fetch`, `oa_snowball` finds and returns information on a core set of articles satisfying certain criteria, but, unlike `oa_fetch`, it also returns information the articles that cite and are cited by this core set.
+The user can also perform *snowballing* with `oa_snowball`. Snowballing
+is a literature search technique where the researcher starts with a set
+of articles and find articles that cite or were cited by the original
+set. `oa_snowball` returns a list of 2 elements: *nodes* and *edges*.
+Similar to `oa_fetch`, `oa_snowball` finds and returns information on a
+core set of articles satisfying certain criteria, but, unlike
+`oa_fetch`, it also returns information the articles that cite and are
+cited by this core set.
 
 ``` r
 # The packages ggraph and tidygraph need to be installed to run this chunk
@@ -413,10 +481,10 @@ snowball_docs <- oa_snowball(
 #> Getting 1 page of results with a total of 2 records...
 #> Collecting all documents citing the target papers...
 #> Requesting url: https://api.openalex.org/works?filter=cites%3AW1963991285%7CW1964141474
-#> Getting 3 pages of results with a total of 501 records...
+#> Getting 3 pages of results with a total of 533 records...
 #> Collecting all documents cited by the target papers...
 #> Requesting url: https://api.openalex.org/works?filter=cited_by%3AW1963991285%7CW1964141474
-#> Getting 1 page of results with a total of 87 records...
+#> Getting 1 page of results with a total of 91 records...
 
 ggraph(graph = as_tbl_graph(snowball_docs), layout = "stress") +
   geom_edge_link(aes(alpha = after_stat(index)), show.legend = FALSE) +
@@ -432,18 +500,17 @@ ggraph(graph = as_tbl_graph(snowball_docs), layout = "stress") +
     legend.position = "bottom"
   ) +
   guides(fill = "none")
-#> Warning: Using the `size` aesthetic in this geom was deprecated in ggplot2 3.4.0.
-#> ℹ Please use `linewidth` in the `default_aes` field and elsewhere instead.
-#> This warning is displayed once every 8 hours.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
 ```
 
-<img src="man/figures/README-snowballing-1.png" width="100%"/>
+<img src="man/figures/README-snowballing-1.png" width="100%" />
 
 ## 🌾 N-grams
 
-OpenAlex offers (limited) support for [fulltext N-grams](https://docs.openalex.org/api-entities/works/get-n-grams#fulltext-coverage) of Work entities (these have IDs starting with `"W"`). Given a vector of work IDs, `oa_ngrams` returns a dataframe of N-gram data (in the `ngrams` list-column) for each work.
+OpenAlex offers (limited) support for [fulltext
+N-grams](https://docs.openalex.org/api-entities/works/get-n-grams#fulltext-coverage)
+of Work entities (these have IDs starting with `"W"`). Given a vector of
+work IDs, `oa_ngrams` returns a dataframe of N-gram data (in the
+`ngrams` list-column) for each work.
 
 ``` r
 ngrams_data <- oa_ngrams(
@@ -495,44 +562,52 @@ ngrams_data |>
   )
 ```
 
-<img src="man/figures/README-ngrams-1.png" width="100%"/>
+<img src="man/figures/README-ngrams-1.png" width="100%" />
 
-`oa_ngrams` can sometimes be slow because the N-grams data can get pretty big, but given that the N-grams are `"cached via CDN"`](<https://docs.openalex.org/api-entities/works/get-n-grams#api-endpoint>), you may also consider parallelizing for this special case (`oa_ngrams` does this automatically if you have `{curl} >= v5.0.0`).
+`oa_ngrams` can sometimes be slow because the N-grams data can get
+pretty big, but given that the N-grams are
+`"cached via CDN"`\](<https://docs.openalex.org/api-entities/works/get-n-grams#api-endpoint>),
+you may also consider parallelizing for this special case (`oa_ngrams`
+does this automatically if you have `{curl} >= v5.0.0`).
 
 ## 💫 About OpenAlex
 
 <figure>
-
-<img src="man/figures/oar.png" alt="oar-img"/>
-
-<figcaption aria-hidden="true">
-
-oar-img
-
-</figcaption>
-
+<img src="man/figures/oar.png" alt="oar-img" />
+<figcaption aria-hidden="true">oar-img</figcaption>
 </figure>
 
-::: {style="text-align: right"}
-Schema credits: [\@dhimmel](https://github.com/dhimmel)
-:::
+<div style="text-align: right">
 
-[OpenAlex](https://openalex.org) is a fully open catalog of the global research system. It's named after the ancient [Library of Alexandria](https://en.wikipedia.org/wiki/Library_of_Alexandria). The OpenAlex dataset describes scholarly entities and how those entities are connected to each other. There are five types of entities:
+Schema credits: [@dhimmel](https://github.com/dhimmel)
 
--   **Works** are papers, books, datasets, etc; they cite other works
+</div>
 
--   **Authors** are people who create works
+[OpenAlex](https://openalex.org) is a fully open catalog of the global
+research system. It’s named after the ancient [Library of
+Alexandria](https://en.wikipedia.org/wiki/Library_of_Alexandria). The
+OpenAlex dataset describes scholarly entities and how those entities are
+connected to each other. There are five types of entities:
 
--   **Venues** are journals and repositories that host works
+- **Works** are papers, books, datasets, etc; they cite other works
 
--   **Institutions** are universities and other orgs that are affiliated with works (via authors)
+- **Authors** are people who create works
 
--   **Concepts** *tag* Works with a topic
+- **Sources** are journals and repositories that host works
+
+- **Institutions** are universities and other orgs that are affiliated
+  with works (via authors)
+
+- **Concepts** *tag* Works with a topic
 
 ## 🤝 Code of Conduct
 
-Please note that this package is released with a [Contributor Code of Conduct](https://ropensci.org/code-of-conduct/). By contributing to this project, you agree to abide by its terms.
+Please note that this package is released with a [Contributor Code of
+Conduct](https://ropensci.org/code-of-conduct/). By contributing to this
+project, you agree to abide by its terms.
 
 ## 👓 Acknowledgements
 
-Package hex was made with [Midjourney](https://www.midjourney.com/home/) and thus inherits a [CC BY-NC 4.0 license](https://creativecommons.org/licenses/by-nc/4.0/legalcode).
+Package hex was made with [Midjourney](https://www.midjourney.com/home/)
+and thus inherits a [CC BY-NC 4.0
+license](https://creativecommons.org/licenses/by-nc/4.0/legalcode).

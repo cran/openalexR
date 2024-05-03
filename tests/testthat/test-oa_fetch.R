@@ -294,12 +294,12 @@ test_that("oa_fetch other entities works", {
   skip_on_cran()
 
   random_authors <- oa_fetch(entity = "authors", options = list(sample = 20))
-  random_venues <- oa_fetch(entity = "venues", options = list(sample = 20))
+  random_sources <- oa_fetch(entity = "sources", options = list(sample = 20))
   random_concepts <- oa_fetch(entity = "concepts", options = list(sample = 20))
   random_institutions <- oa_fetch(entity = "institutions", options = list(sample = 20))
 
   expect_equal(nrow(random_authors), 20)
-  expect_equal(nrow(random_venues), 20)
+  expect_equal(nrow(random_sources), 20)
   expect_equal(nrow(random_concepts), 20)
   expect_equal(nrow(random_institutions), 20)
 })
@@ -364,8 +364,8 @@ test_that("oa_fetch works with 1 identifier", {
   expect_s3_class(s, "data.frame")
   expect_s3_class(co, "data.frame")
 
-  expect_equal(dim(w), c(1, 36))
-  expect_equal(dim(a), c(1, 16))
+  expect_equal(dim(w), c(1, 38))
+  expect_equal(dim(a), c(1, 17))
   expect_equal(dim(i), c(1, 21))
   expect_equal(dim(f), c(1, 17))
   expect_equal(dim(p), c(1, 19))

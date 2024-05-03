@@ -5,10 +5,14 @@
 #' @examples
 #' oa_entities()
 oa_entities <- function() {
-  c("works", "authors", "venues", "institutions", "concepts",
-    "funders", "sources", "publishers")
+  c(
+    "works", "authors", "institutions", "concepts",
+    "funders", "sources", "publishers"
+  )
 }
 
+#' Fetching records
+#'
 #' A composition function to perform query building, requesting,
 #' and convert the result to a tibble/data frame.
 #' @inheritParams oa_query
@@ -98,9 +102,9 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
 
   if (!is.null(options$sample) && (options$sample > per_page)) {
     paging <- "page"
-  } else if (!is.null(options$page)){
+  } else if (!is.null(options$page)) {
     paging <- "page"
-  } else if (is.null(paging)){
+  } else if (is.null(paging)) {
     paging <- "cursor"
   }
 
@@ -137,25 +141,20 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
   if (length(final_res[[1]]) == 0) { # || is.null(final_res[[1]][[1]]$id)
     return(NULL)
   }
-
-  if (isTRUE(count_only)) {
-    if (output == "list"){
-      return(unlist(final_res, recursive = FALSE))
-    } else {
-      return(do.call(cbind,final_res))
-    }
-  }
+  final_res <- unlist(final_res, recursive = FALSE)
 
   if (output == "list") {
-    unlist(final_res, recursive = FALSE)
-  } else {
-    do.call(rbind, lapply(
-      final_res, oa2df,
-      entity = entity, options = options, abstract = abstract,
-      count_only = count_only, group_by = group_by,
-      verbose = verbose
-    ))
+    return(final_res)
   }
+
+  # Flatten out the initial chunking of 50 at a time
+  final_res <- list(final_res)
+  do.call(rbind, lapply(
+    final_res, oa2df,
+    entity = entity, options = options, abstract = abstract,
+    count_only = count_only, group_by = group_by,
+    verbose = verbose
+  ))
 }
 
 #' Get bibliographic records from OpenAlex database
@@ -208,35 +207,20 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
 #' #   An R-tool for comprehensive science mapping analysis.
 #' #   Journal of informetrics, 11(4), 959-975.
 #'
-#'
-#' query_work <- oa_query(
-#'   identifier = "W2755950973",
-#'   entity = "works",
-#'   endpoint = "https://api.openalex.org"
-#' )
-#'
-#' res <- oa_request(
-#'   query_url = query_work,
-#'   count_only = FALSE,
-#'   verbose = FALSE
-#' )
+#' res <- oa_request(query_url = "https://api.openalex.org/works/W2755950973")
 #'
 #' #  The author Massimo Aria is associated to the OpenAlex-id A5069892096.
 #'
-#'
 #' query_author <- oa_query(
 #'   identifier = "A5069892096",
-#'   entity = "authors",
-#'   endpoint = "https://api.openalex.org"
+#'   entity = "authors"
 #' )
-#'
+#' query_author
 #' res <- oa_request(
 #'   query_url = query_author,
 #'   count_only = FALSE,
 #'   verbose = FALSE
 #' )
-#'
-#'
 #'
 #' ### EXAMPLE 2: all works citing a particular work.
 #'
@@ -253,8 +237,8 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
 #' query2 <- oa_query(
 #'   identifier = NULL,
 #'   entity = "works",
-#'   filter = "cites:W2755950973",
-#'   from_publication_date = "2021-01-01",
+#'   cites = "W2755950973",
+#'   from_publication_date = "2021-12-01",
 #'   to_publication_date = "2021-12-31",
 #'   search = NULL,
 #'   endpoint = "https://api.openalex.org"
@@ -275,13 +259,10 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
 #'
 #'
 #' query3 <- oa_query(
-#'   identifier = NULL,
 #'   entity = "works",
-#'   filter = 'title.search:"bibliometric analysis"|"science mapping"',
-#'   from_publication_date = "2020-01-01",
-#'   to_publication_date = "2021-12-31",
-#'   search = NULL,
-#'   endpoint = "https://api.openalex.org"
+#'   title.search = c("bibliometric analysis", "science mapping"),
+#'   from_publication_date = "2021-12-01",
+#'   to_publication_date = "2021-12-31"
 #' )
 #'
 #' res3 <- oa_request(
@@ -297,13 +278,10 @@ oa_fetch <- function(entity = if (is.null(identifier)) NULL else id_type(shorten
 #' # Query only to know how many works could be retrieved (count_only=TRUE)
 #'
 #' query4 <- oa_query(
-#'   identifier = NULL,
 #'   entity = "works",
-#'   filter = 'title.search:"bibliometric analysis"|"science mapping"',
+#'   title.search = c("bibliometric analysis", "science mapping"),
 #'   from_publication_date = "2020-01-01",
-#'   to_publication_date = "2021-12-31",
-#'   search = NULL,
-#'   endpoint = "https://api.openalex.org"
+#'   to_publication_date = "2021-12-31"
 #' )
 #'
 #' res4 <- oa_request(
@@ -328,9 +306,14 @@ oa_request <- function(query_url,
   ua <- httr::user_agent("https://github.com/ropensci/openalexR/")
 
   # building query...
-  # first, download info about n. of items returned by the query
   is_group_by <- grepl("group_by", query_url)
-  query_ls <- if (is_group_by) list() else list("per-page" = 1)
+  if (is_group_by) {
+    result_name <- "group_by"
+    query_ls <- list()
+  } else {
+    result_name <- "results"
+    query_ls <- list("per-page" = 1)
+  }
 
   if (!is.null(mailto)) {
     if (isValidEmail(mailto)) {
@@ -340,11 +323,8 @@ oa_request <- function(query_url,
     }
   }
 
+  # first, download info about n. of items returned by the query
   res <- api_request(query_url, ua, query = query_ls, api_key = api_key)
-
-  if (is_group_by) {
-    return(res$group_by)
-  }
 
   if (!is.null(res$meta)) {
     ## return only item counting
@@ -354,11 +334,34 @@ oa_request <- function(query_url,
   } else {
     return(res)
   }
+
+  # Setting items per page
+  query_ls[["per-page"]] <- per_page
+
+  if (is_group_by) {
+    data <- vector("list")
+    res <- NULL
+    i <- 1
+    next_page <- get_next_page("cursor", i, res)
+    if (verbose) cat("\nDownloading groups...\n|")
+    while (!is.null(next_page)) {
+      if (verbose) cat("=")
+      Sys.sleep(1 / 100)
+      query_ls[[paging]] <- next_page
+      res <- api_request(query_url, ua, query = query_ls)
+      data <- c(data, res[[result_name]])
+      i <- i + 1
+      next_page <- get_next_page("cursor", i, res)
+    }
+    cat("\n")
+    return(data)
+  }
+
   n_items <- res$meta$count
   n_pages <- ceiling(n_items / per_page)
 
   ## number of pages
-  if (is.null(pages)){
+  if (is.null(pages)) {
     pages <- seq.int(n_pages)
   } else {
     pages <- pages[pages <= n_pages]
@@ -383,9 +386,6 @@ oa_request <- function(query_url,
     pb <- oa_progress(n = n_pages, text = "OpenAlex downloading")
   }
 
-  # Setting items per page
-  query_ls[["per-page"]] <- per_page
-
   # Activation of cursor pagination
   data <- vector("list", length = n_pages)
   res <- NULL
@@ -395,10 +395,41 @@ oa_request <- function(query_url,
     next_page <- get_next_page(paging, i, res)
     query_ls[[paging]] <- next_page
     res <- api_request(query_url, ua, query = query_ls)
-    if (!is.null(res$results)) data[[i]] <- res$results
+    if (!is.null(res[[result_name]])) data[[i]] <- res[[result_name]]
   }
 
-  unlist(data, recursive = FALSE)
+  data <- unlist(data, recursive = FALSE)
+
+  if (grepl("filter", query_url) && grepl("works", query_url)) {
+    truncated <- unlist(truncated_authors(data))
+    if (length(truncated)) {
+      truncated <- shorten_oaid(truncated)
+      warning(
+        "\nThe following work(s) have truncated lists of authors: ",
+        paste(truncated, collapse = ", "),
+        ".\nQuery each work separately by its identifier to get full list of authors.\n",
+        "For example:\n  ",
+        paste0(
+          "lapply(c(\"",
+          paste(utils::head(truncated, 2), collapse = "\", \""),
+          "\"), \\(x) oa_fetch(identifier = x))"
+        ),
+        "\nDetails at https://docs.openalex.org/api-entities/authors/limitations."
+      )
+    }
+  }
+
+  data
+}
+
+truncated_authors <- function(list_result) {
+  lapply(
+    list_result,
+    function(x){
+      trunc <- x$is_authors_truncated
+      if (!is.null(trunc) && trunc) x$id else NULL
+    }
+  )
 }
 
 get_next_page <- function(paging, i, res = NULL) {
@@ -429,7 +460,8 @@ get_next_page <- function(paging, i, res = NULL) {
 #' @param identifier Character. OpenAlex ID(s) as item identifier(s).
 #' See more at <https://docs.openalex.org/how-to-use-the-api/get-single-entities#the-openalex-id>.
 #' @param entity Character. Scholarly entity of the search.
-#' The argument can be one of c("works", "authors", "venues", "institutions", "concepts").
+#' The argument can be one of
+#' c("works", "authors", "institutions", "concepts", "funders", "sources", "publishers").
 #' If not provided, `entity` is guessed from `identifier`.
 #' @param options List. Additional parameters to add in the query. For example:
 #'
@@ -438,7 +470,7 @@ get_next_page <- function(paging, i, res = NULL) {
 #' https://docs.openalex.org/how-to-use-the-api/get-single-entities/select-fields
 #'
 #' - `sort` Character. Attribute to sort by.
-#' For example: "display_name" for venues or "cited_by_count:desc" for works.
+#' For example: "display_name" for sources or "cited_by_count:desc" for works.
 #' See more at <https://docs.openalex.org/how-to-use-the-api/get-lists-of-entities/sort-entity-lists>.
 #'
 #' - `sample` Integer. Number of (random) records to return.
@@ -495,11 +527,9 @@ get_next_page <- function(paging, i, res = NULL) {
 #'   verbose = TRUE
 #' )
 #'
-#'
 #' #  The author Massimo Aria is associated to the OpenAlex-id A5069892096:
 #'
 #' query_auth <- oa_query(identifier = "A5069892096", verbose = TRUE)
-#'
 #'
 #' ### EXAMPLE 2: all works citing a particular work.
 #'
@@ -551,9 +581,18 @@ oa_query <- function(filter = NULL,
                      endpoint = "https://api.openalex.org",
                      verbose = FALSE,
                      ...) {
-
   entity <- match.arg(entity, oa_entities())
   filter <- c(filter, list(...))
+
+  empty_filters <- which(lengths(filter) == 0)
+  if (length(empty_filters) > 0) {
+    filter <- filter[-empty_filters]
+    stop(
+      "Filters must have a value: ",
+      paste(names(empty_filters), collapse = ", "),
+      call. = FALSE
+    )
+  }
 
   if (length(filter) > 0 || multiple_id) {
     null_locations <- vapply(filter, is.null, logical(1))
@@ -570,7 +609,10 @@ oa_query <- function(filter = NULL,
   }
 
   if (is.null(identifier) || multiple_id) {
-    if (length(filter) == 0 && is.null(search) && is.null(options$sample)) {
+    if (length(filter) == 0 &&
+      is.null(search) &&
+      is.null(group_by) &&
+      is.null(options$sample)) {
       message("Identifier is missing, please specify filter or search argument.")
       return()
     }
@@ -595,7 +637,7 @@ oa_query <- function(filter = NULL,
     query = query
   )
 
-  if (is.null(oa_print())){
+  if (is.null(oa_print())) {
     url_display <- query_url
   } else {
     query_url <- utils::URLdecode(query_url)
@@ -641,20 +683,11 @@ oa_random <- function(entity = oa_entities(),
   final_res
 }
 
-api_request <- function(query_url, ua, query = query, api_key = oa_apikey()) {
+api_request <- function(query_url, ua, query, api_key = oa_apikey()) {
   res <- httr::GET(query_url, ua, query = query, httr::add_headers(api_key = api_key))
 
-  if (httr::status_code(res) == 200) {
-    if (httr::http_type(res) != "application/json") {
-      stop("API did not return json", call. = FALSE)
-    }
-
-    data <- jsonlite::fromJSON(
-      httr::content(res, as = "text", encoding = "utf-8"),
-      simplifyVector = FALSE
-    )
-
-    return(data)
+  if (httr::status_code(res) == 400) {
+    stop("HTTP status 400 Request Line is too large")
   }
 
   if (httr::status_code(res) == 429) {
@@ -662,10 +695,22 @@ api_request <- function(query_url, ua, query = query, api_key = oa_apikey()) {
     return(list())
   }
 
-  parsed <- jsonlite::fromJSON(
-    httr::content(res, "text", encoding = "UTF-8"),
-    simplifyVector = FALSE
-  )
+  m <- httr::content(res, "text", encoding = "UTF-8")
+
+  if (httr::status_code(res) == 503) {
+    mssg <- regmatches(m, regexpr("(?<=<title>).*?(?=<\\/title>)", m, perl = TRUE))
+    message(mssg, ". Please try setting `per_page = 25` in your function call!")
+    return(list())
+  }
+
+  parsed <- jsonlite::fromJSON(m, simplifyVector = FALSE)
+
+  if (httr::status_code(res) == 200) {
+    if (httr::http_type(res) != "application/json") {
+      stop("API did not return json", call. = FALSE)
+    }
+    return(parsed)
+  }
 
   if (httr::http_error(res)) {
     stop(
