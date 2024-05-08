@@ -1,12 +1,12 @@
-2df2c927666a01d606de2051dbc00fe9 *DESCRIPTION
+93b7dc3e0e76ef2ab2d6616797714d4d *DESCRIPTION
 f71bacc66ff765fee1e238e14c34eb66 *LICENSE
 4bd9cf922ae20639e46be80d2c624b64 *NAMESPACE
-2cced251b561fe2cbb3a27a8a6dea52b *NEWS.md
+fc28850f4ef959288d2ee2b13ae1980b *NEWS.md
 9a2abab4c1d743478a79d3500408acf1 *R/coro.R
 96efde54d868fce53f37217376744e20 *R/data.R
 96018e0f59a89caef1b9c918d10ac749 *R/globals.R
 f62dcde82736e401c76ac327cfe9bf15 *R/oa2bibliometrix.R
-10a47e8785c0cd5ba2d4630ac9214d3a *R/oa2df.R
+2eb721229938ddc894c33eaef7be41fb *R/oa2df.R
 4ed911de1cec76c8340344a0ee83d294 *R/oa_fetch.R
 486adae8dd6b0f8c11c5056bf81962cc *R/oa_ngrams.R
 05d694b22253119837921c7aa3407a9b *R/oa_snowball.R
@@ -14,9 +14,10 @@ f62dcde82736e401c76ac327cfe9bf15 *R/oa2bibliometrix.R
 e0ef681901465d24f47f9139cb2c086a *R/openalexR-package.R
 e7fdae2a1ca74f9da0bf687de54a7425 *R/simplify.R
 e4639e6355b09a95694a4efd37068f31 *R/utils.R
-f2ed6dc99293e1303626b61e0def8f62 *README.md
+9870cfa55cc7f8ab71d4b748d3ed3882 *README.md
 9432f4b774b50d7056e2efde2eb251a8 *data/concept_abbrev.rda
 3b67cb65f215d8ab3dbb1ad9c2453c04 *data/countrycode.rda
+5beb2accdeeaa8c3af7f320863b66e36 *inst/CITATION
 ce414f39585f1eb5a51b54999cbb707d *man/authors2df.Rd
 073b1a6e04ccf8a3a9fe353f4fc0fae5 *man/concept_abbrev.Rd
 2b376e2d8904756452300055e0a0eb74 *man/concepts2df.Rd
@@ -47,7 +48,7 @@ e8569a1398b352ba50cd0f18f2e54ba3 *tests/testthat.R
 5ca45f525c08a915684ec41f5291bf92 *tests/testthat/test-coro.R
 9e69402b512ef8857c633d09c8150516 *tests/testthat/test-oa2bibliometrix.R
 8098286a90714c418e00f98f4cf3055b *tests/testthat/test-oa2df.R
-b99997b810c4310e9225f8a92901b561 *tests/testthat/test-oa_fetch.R
+7d57481962ff24e4c0e1f61369fb1096 *tests/testthat/test-oa_fetch.R
 0f93f70698046f6c932371ca3d755df2 *tests/testthat/test-oa_ngrams.R
 ebb8a4a47a2dd013e8e1a1901b80f67e *tests/testthat/test-oa_query.R
 1bbbbd97d4cf64e395e8e5aefda73929 *tests/testthat/test-oa_snowball.R
