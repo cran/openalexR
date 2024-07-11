@@ -6,7 +6,7 @@
 #' @param data List. Output of \code{oa_request}.
 #' @param entity Character. Scholarly entity of the search.
 #' The argument can be one of
-#' c("works", "authors", "institutions", "concepts", "funders", "sources", "publishers").
+#' c("works", "authors", "institutions", "concepts", "funders", "sources", "publishers", "topics").
 #' @param abstract Logical. If TRUE, the function returns also the abstract of each item.
 #' Ignored if entity is different from "works". Defaults to TRUE.
 #' @param verbose Logical.
@@ -75,6 +75,7 @@ oa2df <- function(data, entity, options = NULL, count_only = FALSE, group_by = N
     funders = funders2df(data, verbose),
     sources = sources2df(data, verbose),
     publishers = publishers2df(data, verbose),
+    topics = topics2df(data, verbose),
     snowball = snowball2df(data)
   )
 }
@@ -253,32 +254,10 @@ works2df <- function(data, abstract = TRUE, verbose = TRUE,
       names(open_access)[[1]] <- "is_oa_anywhere"
     }
 
-    # Topics
-    process_paper_topics <- function(paper) {
-      topics <- paper$topics
-      if (is.null(topics)) {
-        return(NULL)
-      }
-      topics_ls <- lapply(seq_along(topics), function(i) {
-        topic <- topics[[i]]
-        relev <- c(
-          # Hoist fields for the topic entity
-          list(topic = topic[c("id", "display_name")]),
-          # Keep info about other entities as-is
-          topic[vapply(topic, is.list, logical(1))]
-        )
-        relev_df <- subs_na(relev, "rbind_df")[[1]]
-        relev_df <- tibble::rownames_to_column(relev_df, "name")
-        cbind(i = i, score = topic$score, relev_df)
-      })
-      topics_df <- do.call(rbind.data.frame, topics_ls)
-      list(tibble::as_tibble(topics_df))
-    }
-    topics <- process_paper_topics(paper)
-
+    topics <- process_topics(paper, "score")
     out_ls <- c(
       sim_fields, venue, open_access, paper_biblio,
-      list(author = author, ab = ab, topics = topics)
+      list(author = author, ab = ab), topics
     )
     out_ls[sapply(out_ls, is.null)] <- NULL
     list_df[[i]] <- out_ls
@@ -362,7 +341,6 @@ authors2df <- function(data, verbose = TRUE,
     "identical", "relevance_score",
     "flat", "display_name_alternatives",
     "rbind_df", "counts_by_year",
-    "rbind_df", "x_concepts",
     "flat", "ids"
   )
 
@@ -396,8 +374,8 @@ authors2df <- function(data, verbose = TRUE,
       }
       sub_affiliation$affiliations_other <- list(affiliations_other)
     }
-
-    list_df[[i]] <- c(sim_fields, sub_affiliation)
+    topics <- process_topics(item, "count")
+    list_df[[i]] <- c(sim_fields, sub_affiliation, topics)
   }
 
   col_order <- c(
@@ -406,7 +384,7 @@ authors2df <- function(data, verbose = TRUE,
     "affiliation_display_name", "affiliation_id", "affiliation_ror",
     "affiliation_country_code", "affiliation_type", "affiliation_lineage",
     "affiliations_other",
-    "x_concepts", "works_api_url"
+    "topics", "works_api_url"
   )
 
   out_df <- rbind_oa_ls(list_df)
@@ -472,7 +450,6 @@ institutions2df <- function(data, verbose = TRUE,
     "flat", "display_name_acronyms",
     "row_df", "geo",
     "rbind_df", "counts_by_year",
-    "rbind_df", "x_concepts",
     "rbind_df", "associated_institutions",
     "flat", "ids"
   )
@@ -497,7 +474,8 @@ institutions2df <- function(data, verbose = TRUE,
         )
       )
     }
-    list_df[[i]] <- c(sim_fields, interna)
+    topics <- process_topics(item, "count")
+    list_df[[i]] <- c(sim_fields, interna, topics)
   }
 
 
@@ -507,7 +485,7 @@ institutions2df <- function(data, verbose = TRUE,
     "homepage_url", "image_url", "image_thumbnail_url",
     "associated_institutions", "relevance_score", "works_count",
     "cited_by_count", "counts_by_year",
-    "works_api_url", "x_concepts", "updated_date", "created_date"
+    "works_api_url", "topics", "updated_date", "created_date"
   )
 
   out_df <- rbind_oa_ls(list_df)
@@ -739,7 +717,6 @@ sources2df <- function(data, verbose = TRUE,
     "flat", "alternate_titles",
     "identical", "abbreviated_title",
     "identical", "type",
-    "rbind_df", "x_concepts",
     "rbind_df", "counts_by_year",
     "identical", "works_api_url",
     "identical", "updated_date",
@@ -760,7 +737,8 @@ sources2df <- function(data, verbose = TRUE,
       fields$type,
       SIMPLIFY = FALSE
     )
-    list_df[[i]] <- sim_fields
+    topics <- process_topics(item, "count")
+    list_df[[i]] <- c(sim_fields, topics)
   }
 
   out_df <- rbind_oa_ls(list_df)
@@ -840,6 +818,90 @@ publishers2df <- function(data, verbose = TRUE,
 
   out_df <- rbind_oa_ls(list_df)
   out_df
+}
+
+
+#' Convert OpenAlex collection of topics' records from list format to data frame
+#'
+#' It converts collection of topics' records gathered from the OpenAlex database.
+#' The function converts a list of topics' records obtained using \code{oa_request} into a data frame/tibble.
+#'
+#' @inheritParams works2df
+#'
+#' @return a data.frame.
+#'
+#' For more extensive information about OpenAlex API, please visit: <https://docs.openalex.org>
+#'
+#'
+#' @examples
+#' \dontrun{
+#'
+#' # Query to search information about all Italian educational institutions
+#'
+#'
+#' query_inst <- oa_query(
+#'   entity = "topics",
+#'   display_name.search = "electrodynamics"
+#' )
+#'
+#' res <- oa_request(
+#'   query_url = query_inst,
+#'   count_only = FALSE,
+#'   verbose = FALSE
+#' )
+#'
+#' df <- oa2df(res, entity = "topics")
+#'
+#' df
+#' }
+#'
+#' @export
+topics2df <- function(data, verbose = TRUE,
+                        pb = if (verbose) oa_progress(length(data)) else NULL) {
+  topic_process <- tibble::tribble(
+    ~type, ~field,
+    "identical", "id",
+    "identical", "display_name",
+    "identical", "description",
+    "flat", "ids",
+    "identical", "relevance_score",
+    "identical", "works_count",
+    "identical", "cited_by_count",
+    "identical", "updated_date",
+    "identical", "created_date",
+    "rbind_df", "siblings",
+    "flat", "keywords"
+  )
+
+  n <- length(data)
+  list_df <- vector(mode = "list", length = n)
+
+  for (i in seq.int(n)) {
+    if (verbose) pb$tick()
+
+    item <- data[[i]]
+    fields <- topic_process[topic_process$field %in% names(item), ]
+    sim_fields <- mapply(
+      function(x, y) subs_na(item[[x]], type = y),
+      fields$field,
+      fields$type,
+      SIMPLIFY = FALSE
+    )
+    domains <- unlist(item[c("subfield", "field", "domain")], recursive = FALSE)
+    domains <- as.data.frame(do.call(cbind, domains))
+    names(domains) <- gsub("\\.", "_", names(domains))
+    list_df[[i]] <- c(sim_fields, domains)
+  }
+
+  col_order <- c(
+    "id", "display_name", "description", "keywords", "ids",
+    "subfield_id", "subfield_display_name", "field_id", "field_display_name",
+    "domain_id", "domain_display_name", "siblings", "relevance_score",
+    "works_count", "cited_by_count", "updated_date", "created_date"
+  )
+
+  out_df <- rbind_oa_ls(list_df)
+  out_df[, intersect(col_order, names(out_df))]
 }
 
 

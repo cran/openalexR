@@ -1,3 +1,8 @@
+# openalexR 1.4.0
+* "topics" are now a valid entity in oa_fetch
+* The column "topics" replaces concepts in most entities' returned dataframes
+* For Works, "topics" and "concepts" are now returned as separate columns
+
 # openalexR 1.3.1
 * solved bug in au_affiliation_raw in PR#241
 
