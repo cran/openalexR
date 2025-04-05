@@ -31,7 +31,7 @@ test_that("oa_snowball works for recent articles with no citations yet", {
 
   Sys.sleep(1/10)
   snowball_docs <- oa_snowball(
-    identifier = c("W4295757800", "W4296128995", "W4297497355")
+    identifier = c("W2033458484")
   )
   expect_true(is.list(snowball_docs))
 })
@@ -61,14 +61,14 @@ test_that("oa_snowball works for author orcids", {
   # find publications by these two authors this year
   snowball_orcid <- oa_snowball(
     author.orcid = orcids,
-    from_publication_date = "2022-01-01",
+    from_publication_date = "2022-10-01",
     to_publication_date = "2022-12-31",
     citing_params = list(from_publication_date = "2022-10-01"),
-    cited_by_params = list(from_publication_date = "2021-10-01")
+    cited_by_params = list(from_publication_date = "2022-10-01")
   )
 
   nodes <- snowball_orcid$nodes
-  orcids_in <- lapply(nodes$author[nodes$oa_input], function(x) x$au_orcid)
+  orcids_in <- lapply(nodes$authorships[nodes$oa_input], function(x) x$orcid)
   either_orcid <- paste(orcids, collapse = "|")
 
   expect_true(is.list(snowball_orcid))

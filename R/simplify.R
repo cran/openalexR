@@ -36,9 +36,9 @@ show_authors <- function(x, simp_func = utils::head) {
       if (is.logical(y)) {
         return(NA_character_)
       }
-      top_subfields <- y[y$name == "subfield", ]
+      top_subfields <- y[y$type == "subfield", ]
       paste(utils::head(top_subfields, 3)$display_name,
-        collapse = ", "
+            collapse = ", "
       )
     },
     character(1)
@@ -46,7 +46,7 @@ show_authors <- function(x, simp_func = utils::head) {
 
   simp_func(x[, c(
     "id", "display_name", "orcid", "works_count",
-    "cited_by_count", "affiliation_display_name", "top_concepts"
+    "cited_by_count", "top_concepts"
   )])
 }
 
@@ -78,11 +78,11 @@ show_authors <- function(x, simp_func = utils::head) {
 show_works <- function(x, simp_func = utils::head) {
   x$id <- vapply(x$id, shorten_oaid, character(1), USE.NAMES = FALSE)
   x$first_author <- vapply(
-    x$author, get_auth_position, character(1),
+    x$authorships, get_auth_position, character(1),
     position = "first"
   )
   x$last_author <- vapply(
-    x$author, get_auth_position, character(1),
+    x$authorships, get_auth_position, character(1),
     position = "last"
   )
 
@@ -115,7 +115,7 @@ get_auth_position <- function(y, position = "first") {
   if (length(y) == 1 && is.na(y)) {
     return(NA_character_)
   }
-  last <- y[y$author_position == position, "au_display_name"]
+  last <- y[y$author_position == position, "display_name", drop = TRUE]
   if (length(last) == 0) {
     return(NA_character_)
   }

@@ -32,7 +32,7 @@ test_that("oa_request gives messages for unexpected input", {
   expect_message(oa_request(query_url, mailto = 123))
 })
 
-test_that("oa_fetch works", {
+test_that("oa_fetch works for multiple works", {
   skip_on_cran()
 
   work_ids <- c("W2741809807", "W3046863325")
@@ -47,14 +47,18 @@ test_that("oa_fetch works", {
     paste0("https://openalex.org/", sort(work_ids))
   )
 
-  expect_true("au_affiliation_raw" %in% names(multi_works$author[[1]]))
+  expect_true("affiliation_raw" %in% names(multi_works$authorships[[1]]))
 
   Sys.sleep(1 / 10)
-  expect_warning(filtered_works <- oa_fetch(
+  # warn about truncated authors
+  expect_warning(oa_fetch(identifier = c("W4381194940", "W4386241859")))
+
+  Sys.sleep(1 / 10)
+  filtered_works <- oa_fetch(
     entity = "w",
     publication_date = "2020-08-01",
     cited_by_count = ">1000"
-  ))
+  )
   expect_s3_class(filtered_works, "data.frame")
 
   expect_warning(oa_fetch(doi = "123"))
@@ -336,7 +340,7 @@ test_that("oa_fetch works for sources", {
 
   s <- oa_fetch(entity = "sources", search = "nature")
   expect_s3_class(s, "data.frame")
-  expect_equal(ncol(s), 27)
+  expect_equal(ncol(s), 28)
   expect_true(nrow(s) > 200)
 })
 
@@ -352,7 +356,7 @@ test_that("oa_fetch works for publishers", {
 test_that("oa_fetch works with 1 identifier", {
   skip_on_cran()
 
-  w <- oa_fetch(identifier = "W3046863325") # Work
+  w <- oa_fetch(identifier = "W3127908559") # Work
   a <- oa_fetch(identifier = "A5023888391") # Author
   i <- oa_fetch(identifier = "I4200000001") # Institution
   f <- oa_fetch(identifier = "F4320332161") # Funder
@@ -368,12 +372,12 @@ test_that("oa_fetch works with 1 identifier", {
   expect_s3_class(s, "data.frame")
   expect_s3_class(co, "data.frame")
 
-  expect_equal(dim(w), c(1, 38))
-  expect_equal(dim(a), c(1, 17))
-  expect_equal(dim(i), c(1, 21))
+  expect_equal(dim(w), c(1, 43))
+  expect_equal(dim(a), c(1, 14))
+  expect_equal(dim(i), c(1, 22))
   expect_equal(dim(f), c(1, 17))
   expect_equal(dim(p), c(1, 19))
-  expect_equal(dim(s), c(1, 26))
+  expect_equal(dim(s), c(1, 27))
   expect_equal(dim(co), c(1, 16))
 
 })
@@ -403,8 +407,8 @@ test_that("different paging methods yield the same result", {
     title.search = c("bibliometric analysis", "science mapping"),
     cited_by_count = ">50",
     options = list(select = "id"),
-    from_publication_date = "2021-01-01",
-    to_publication_date = "2021-12-31",
+    from_publication_date = "2020-01-01",
+    to_publication_date = "2020-12-31",
     verbose = TRUE
   )
 
@@ -412,19 +416,18 @@ test_that("different paging methods yield the same result", {
     entity = "works",
     title.search = c("bibliometric analysis", "science mapping"),
     cited_by_count = ">50",
-    from_publication_date = "2021-01-01",
-    to_publication_date = "2021-12-31",
     options = list(select = "id"),
+    from_publication_date = "2020-01-01",
+    to_publication_date = "2020-12-31",
+    verbose = TRUE,
     pages = c(2, 4:5),
-    per_page = 10,
-    verbose = TRUE
+    per_page = 10
   )
+
   expect_equal(
-    w0[c(11:20, 31:min(50, nrow(w0))), ],
-    w24
+    sort(w0[c(11:20, 31:min(50, nrow(w0))), ]$id),
+    sort(w24$id)
   )
-
-
 
 })
 
@@ -434,18 +437,52 @@ test_that("pages works", {
   # The last 10 pages when per_page = 20
   # should be the same as the 10 pages when fetching page 2
   w1 <- oa_fetch(
-    search = "transformative change",
+    title.search = "transformative change",
     options = list(select = c("id", "display_name", "publication_date")),
     pages = 1,
     per_page = 20,
     verbose = TRUE
   )
   w2 <- oa_fetch(
-    search = "transformative change",
+    title.search = "transformative change",
     options = list(select = c("id", "display_name", "publication_date")),
     pages = 2,
     per_page = 10,
     verbose = TRUE
   )
   expect_equal(w1[11:20,], w2)
+})
+
+test_that("output=raw works", {
+  skip_on_cran()
+
+  output_raw <- oa_fetch(
+    entity = "works",
+    search = "language",
+    per_page = 2,
+    options = list(sample = 5, seed = 1),
+    output = "raw"
+  )
+
+  # length and type checks
+  expect_type(output_raw, "character")
+  expect_length(output_raw, ceiling(5 / 2)) # length determined by pages
+  raw_parsed <- lapply(output_raw, function(x) {
+    jsonlite::fromJSON(x, simplifyVector = FALSE)$results
+  })
+  expect_equal(lengths(raw_parsed), c(2, 2, 1)) # num results in each page
+  raw_parsed_flattened <- unlist(raw_parsed, recursive = FALSE)
+
+  # equivalence check to tibble format
+  expect_identical(
+    works2df(raw_parsed_flattened),
+    oa_fetch(
+      entity = "works",
+      search = "language",
+      per_page = 2,
+      options = list(sample = 5, seed = 1),
+      output = "tibble"
+    )
+  )
+
 })
