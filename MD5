@@ -1,8 +1,8 @@
-13aba9ac99aa222fe9dd73c62c735832 *DESCRIPTION
+2441aff91d4f81f615ae1fe3cfe5d65b *DESCRIPTION
 f71bacc66ff765fee1e238e14c34eb66 *LICENSE
 7e126015fb33c183149b530b5711e49f *NAMESPACE
-bffc6b9e5cc9955879b7a044ca083ec1 *NEWS.md
-6cd41de26c3cc0beb7d420a69a4e2973 *R/coro.R
+1cba9145244d417a67b1dda919944158 *NEWS.md
+3040a9bec305fd3eeb5c203ccb86a385 *R/coro.R
 864a4a7c77fa4dcb4eb7dc1bf5510496 *R/data.R
 96018e0f59a89caef1b9c918d10ac749 *R/globals.R
 9a2f6349bf048d2884695ea3a50336bc *R/oa2bibliometrix.R
@@ -15,7 +15,7 @@ bffc6b9e5cc9955879b7a044ca083ec1 *NEWS.md
 e0ef681901465d24f47f9139cb2c086a *R/openalexR-package.R
 3ea7d0392f5d4022eb0599bb818095f8 *R/simplify.R
 a4d619142a430c4f23fbebebf5e51bf8 *R/utils.R
-9c147bcda242fa91c9e32b24abb3cf15 *README.md
+9a3c30c4c469fb9a7cea7f46c5921a10 *README.md
 a32985d943d1dcfe53278d9d254a91a6 *data/concept_abbrev.rda
 3b67cb65f215d8ab3dbb1ad9c2453c04 *data/countrycode.rda
 352ec604e50ef17bb5a80806834efaed *data/oa2df_coverage.rda
@@ -37,7 +37,7 @@ d953fabb92e0067e389ac100cbb409c3 *man/oa2df_coverage.Rd
 4a60eb6624ab545d059b3e6dbc68ae01 *man/oa_email.Rd
 46d4a89f017cd6a35d46d538752c51d8 *man/oa_entities.Rd
 e514f0a7330d81c560b79bba82fa61b0 *man/oa_fetch.Rd
-eeb8d87e60e4823fd17165a98a24cd60 *man/oa_generate.Rd
+3c46b6550d4ca438a884fef643fcb5de *man/oa_generate.Rd
 42876571c25d330016624cbca6cefea2 *man/oa_ngrams.Rd
 a2a8670d4e83ab6b4c3fdcf23893d262 *man/oa_query.Rd
 ef2ebb6bed806ace9d2e486621d1057f *man/oa_random.Rd
@@ -60,7 +60,7 @@ b198c20873103e9128dfc52d2658c369 *tests/testthat/test-coverage.R
 4f808bbb22f92b98c66933ad9175ea9a *tests/testthat/test-group_by.R
 75a360a6acc46f6725117ee3a82ea10f *tests/testthat/test-oa2bibliometrix.R
 51a529d03b2bea925acacdf5e028a023 *tests/testthat/test-oa2df.R
-f7ba63cc6aa772ca484966985a490583 *tests/testthat/test-oa_fetch.R
+e86c3c973c6951f1a1debc70d20dacda *tests/testthat/test-oa_fetch.R
 2857ae8c1a1d7190848fdb8f21a1cac0 *tests/testthat/test-oa_ngrams.R
 ebb8a4a47a2dd013e8e1a1901b80f67e *tests/testthat/test-oa_query.R
 24d5bad1f9d87041999435ed6ee69da2 *tests/testthat/test-oa_snowball.R
