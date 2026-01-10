@@ -49,9 +49,11 @@ test_that("oa_fetch works for multiple works", {
 
   expect_true("affiliation_raw" %in% names(multi_works$authorships[[1]]))
 
-  Sys.sleep(1 / 10)
   # warn about truncated authors
-  expect_warning(oa_fetch(identifier = c("W4381194940", "W4386241859")))
+  # TODO Ignore for now
+  # is_authors_truncated is no longer an exported field in the returned json
+  # Sys.sleep(1 / 10)
+  # expect_warning(oa_fetch(identifier = c("W4381194940", "W4386241859")))
 
   Sys.sleep(1 / 10)
   filtered_works <- oa_fetch(
@@ -221,6 +223,23 @@ test_that("oa_fetch can combine (OR) more than 50 DOIs in a filter", {
   )
 
   expect_true(nrow(many_doi_results) >= length(valid_dois) - 5)
+
+  # We don't do more requests than intended. Here, we are between 50 and 100, so
+  # we expect 2 requests.
+  hits <- 0L
+  with_mocked_bindings(
+    oa_request = function(...) {
+      hits <<- hits + 1L
+      # Returning list() allows us to benefit from the early return in oa_fetch
+      # and avoid errors in post-processing since we don't care about the actual
+      # data here.
+      return(list())
+    },
+    {
+      oa_fetch(entity = "works", doi = valid_dois)
+    }
+  )
+  expect_identical(hits, 2L)
 })
 
 test_that("oa_fetch can combine (OR) more than 50 ORCIDs in a filter", {
@@ -343,7 +362,7 @@ test_that("oa_fetch works for sources", {
 
   s <- oa_fetch(entity = "sources", search = "nature")
   expect_s3_class(s, "data.frame")
-  expect_equal(ncol(s), 28)
+  expect_equal(ncol(s), 35)
   expect_true(nrow(s) > 200)
 })
 
@@ -352,7 +371,7 @@ test_that("oa_fetch works for publishers", {
 
   s <- oa_fetch(entity = "publishers", country_codes = "ca")
   expect_s3_class(s, "data.frame")
-  expect_equal(ncol(s), 19)
+  expect_equal(ncol(s), 16)
   expect_true(nrow(s) > 100)
 })
 
@@ -375,13 +394,13 @@ test_that("oa_fetch works with 1 identifier", {
   expect_s3_class(s, "data.frame")
   expect_s3_class(co, "data.frame")
 
-  expect_equal(dim(w), c(1, 43))
+  expect_equal(dim(w), c(1, 42))
   expect_equal(dim(a), c(1, 14))
   expect_equal(dim(i), c(1, 22))
   expect_equal(dim(f), c(1, 17))
-  expect_equal(dim(p), c(1, 19))
-  expect_equal(dim(s), c(1, 27))
-  expect_equal(dim(co), c(1, 16))
+  expect_equal(dim(p), c(1, 12))
+  expect_equal(dim(s), c(1, 34))
+  expect_equal(dim(co), c(1, 14))
 })
 
 test_that("oa_fetch for identifiers works with options", {

@@ -2,7 +2,7 @@ Type: Package
 Package: openalexR
 Title: Getting Bibliographic Records from 'OpenAlex' Database Using
         'DSL' API
-Version: 2.0.2
+Version: 3.0.0
 Authors@R: c(
     person(given = "Massimo",
            family = "Aria",
@@ -31,7 +31,7 @@ License: MIT + file LICENSE
 URL: https://github.com/ropensci/openalexR,
         https://docs.ropensci.org/openalexR/
 BugReports: https://github.com/ropensci/openalexR/issues
-Imports: httr, jsonlite, progress, rlang, tibble
+Imports: cli, httr, jsonlite, rlang, tibble
 Suggests: testthat (>= 3.0.0), dplyr, knitr, rmarkdown, tidyr, purrr,
         ggplot2, coro, rentrez, rrapply, covr
 Encoding: UTF-8
@@ -40,7 +40,7 @@ RoxygenNote: 7.3.3
 Config/testthat/edition: 3
 Depends: R (>= 3.5)
 NeedsCompilation: no
-Packaged: 2025-10-20 19:52:34 UTC; massimoaria
+Packaged: 2026-01-09 07:48:37 UTC; massimoaria
 Author: Massimo Aria [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0002-8517-9411>),
   Corrado Cuccurullo [ctb] (ORCID:
@@ -49,4 +49,4 @@ Author: Massimo Aria [aut, cre, cph] (ORCID:
   June Choe [aut] (ORCID: <https://orcid.org/0000-0002-0701-921X>)
 Maintainer: Massimo Aria <aria@unina.it>
 Repository: CRAN
-Date/Publication: 2025-10-21 09:10:33 UTC
+Date/Publication: 2026-01-10 07:51:19 UTC

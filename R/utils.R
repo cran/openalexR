@@ -97,15 +97,6 @@ oa_print <- function() {
   p
 }
 
-oa_progress <- function(n, text = "converting") {
-  progress::progress_bar$new(
-    format = paste(" ", text, "[:bar] :percent eta: :eta"),
-    total = n,
-    clear = FALSE,
-    width = 60
-  )
-}
-
 asl <- function(z) {
   if (length(z) > 1) {
     return(z)

@@ -68,10 +68,10 @@ oa_ngrams <- function(
       # Check if input is ID of Works entity
       normalized_id <- shorten_oaid(works_identifier)
       if (!all(grepl("^W", normalized_id))) {
-        stop(
-          "Invalid OpenAlex Work entity ID(s) at `works_identifier`: ",
-          paste(which(!grepl("^W", normalized_id)), sep = ", ")
-        )
+        cli::cli_abort(c(
+          "x" = "Invalid OpenAlex Work entity ID(s) at {.arg works_identifier}:",
+          "!" = "Position{?s}: {.val {which(!grepl('^W', normalized_id))}}"
+        ))
       }
 
       # Setup for querying
@@ -80,7 +80,11 @@ oa_ngrams <- function(
 
       #ngrams_failed_template <- data.frame(id = NA, doi = NA, count = NA, ngrams = I(list(NULL)))
       if (verbose) {
-        pb <- oa_progress(n)
+        pb <- cli::cli_progress_bar(
+          format = "{cli::pb_spin} Converting [{cli::pb_current}/{cli::pb_total}] {cli::pb_bar} {cli::pb_percent} ETA: {cli::pb_eta}",
+          total = n,
+          clear = FALSE
+        )
       }
 
       # Fetch
@@ -111,14 +115,18 @@ oa_ngrams <- function(
       } else {
         # One-time message
         if (getOption("oa_ngrams.message.curlv5", TRUE)) {
-          message(
-            "Use `{curl}` >= v5.0.0 for a faster implementation of `oa_ngrams`"
-          )
+          cli::cli_inform(c(
+            "i" = "Use {.pkg curl} >= v5.0.0 for a faster implementation of {.fn oa_ngrams}"
+          ))
           options("oa_ngrams.message.curlv5" = FALSE)
         }
         # Serial fetch
         if (verbose) {
-          pb_dl <- oa_progress(n, "OpenAlex downloading")
+          pb_dl <- cli::cli_progress_bar(
+            format = "{cli::pb_spin} OpenAlex downloading [{cli::pb_current}/{cli::pb_total}] {cli::pb_bar} {cli::pb_percent} ETA: {cli::pb_eta}",
+            total = n,
+            clear = FALSE
+          )
         }
 
         ngrams_list <- vector("list", n)
@@ -144,9 +152,7 @@ oa_ngrams <- function(
       tibble::as_tibble(do.call(rbind.data.frame, ngrams_dfs))
     },
     error = function(cond) {
-      message("ngrams not available for this work")
-      # message(cond)
-      # Choose a return value in case of error
+      cli::cli_inform("ngrams not available for this work")
       return(ngrams_failed_template)
     }
   )

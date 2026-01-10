@@ -1,11 +1,9 @@
+# openalexR 3.0.0
+* Updates for new OpenAlex Walden `data-version=2`
+* Add cli to Imports
+
 # openalexR 2.0.2
-* Fixed HTTP status 429 on CRAN
-
-# openalexR 2.0.1
-
-# openalexR 2.0.0
-
-# openalexR 2.0.0
+* Fix CRAN R CMD check issues
 
 # openalexR 2.0.0
 * Breaking changes in column names in the output of `oa_fetch`:
