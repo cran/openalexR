@@ -185,7 +185,7 @@ works_from_orcids <- oa_fetch(
 )
 #> Requesting url:
 #> <https://api.openalex.org/works?filter=author.orcid%3A0000-0001-6187-6610%7C0000-0002-8517-9411>
-#> ℹ Getting 2 pages of results with a total of 293 records...
+#> ℹ Getting 2 pages of results with a total of 287 records...
 works_from_orcids |>
   show_works() |>
   knitr::kable()
@@ -217,7 +217,7 @@ works_search <- oa_fetch(
 )
 #> Requesting url:
 #> <https://api.openalex.org/works?filter=title.search%3Abibliometric%20analysis%7Cscience%20mapping%2Ccited_by_count%3A%3E50%2Cfrom_publication_date%3A2020-01-01%2Cto_publication_date%3A2021-12-31&sort=cited_by_count%3Adesc>
-#> ℹ Getting 3 pages of results with a total of 550 records...
+#> ℹ Getting 3 pages of results with a total of 561 records...
 #> ⠙ OpenAlex downloading [2/3] ■■■■■■■■■■■■■■■■■■■■■             67% ETA:  1s
 #> 
 #> ⠙ OpenAlex downloading [3/3] ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% ETA:  0s
@@ -299,7 +299,7 @@ do.call(oa_fetch, c(my_arguments, list(count_only = TRUE)))
 #> [1] 88
 #> 
 #> $db_response_time_ms
-#> [1] 18
+#> [1] 50
 #> 
 #> $page
 #> [1] 1
@@ -491,9 +491,9 @@ snowball_docs <- oa_snowball(
 #> Requesting url:
 #> <https://api.openalex.org/works?filter=cites%3AW1963991285%7CW1964141474>
 #> ℹ Getting 4 pages of results with a total of 658 records...
-#> ⠙ OpenAlex downloading [2/4] ■■■■■■■■■■■■■■■■                  50% ETA: 18s
+#> ⠙ OpenAlex downloading [2/4] ■■■■■■■■■■■■■■■■                  50% ETA:  2s
 #> 
-#> ⠹ OpenAlex downloading [3/4] ■■■■■■■■■■■■■■■■■■■■■■■           75% ETA:  7s
+#> ⠹ OpenAlex downloading [3/4] ■■■■■■■■■■■■■■■■■■■■■■■           75% ETA:  2s
 #> 
 #> ⠹ OpenAlex downloading [4/4] ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  100% ETA:  0s
 #> 
