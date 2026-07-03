@@ -10,13 +10,13 @@ institutions2df(data, verbose = TRUE)
 \item{data}{List. Output of \code{oa_request}.}
 
 \item{verbose}{Logical.
-If TRUE, print information about the dataframe conversion process.
+If TRUE, print information about the data frame conversion process.
 Defaults to TRUE.}
 }
 \value{
 a data.frame.
 
-For more extensive information about OpenAlex API, please visit: <https://docs.openalex.org>
+For more extensive information about OpenAlex API, please visit: <https://developers.openalex.org/>
 }
 \description{
 It converts bibliographic collection of institutions' records gathered from OpenAlex database \href{https://openalex.org/}{https://openalex.org/} into data frame.

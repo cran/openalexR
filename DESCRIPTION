@@ -2,7 +2,7 @@ Type: Package
 Package: openalexR
 Title: Getting Bibliographic Records from 'OpenAlex' Database Using
         'DSL' API
-Version: 3.0.1
+Version: 3.1.0
 Authors@R: c(
     person(given = "Massimo",
            family = "Aria",
@@ -26,7 +26,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0002-0701-921X"))
     )
 Description: A set of tools to extract bibliographic content from
-    'OpenAlex' database using API <https://docs.openalex.org>.
+    'OpenAlex' database using API <https://developers.openalex.org/>.
 License: MIT + file LICENSE
 URL: https://github.com/ropensci/openalexR,
         https://docs.ropensci.org/openalexR/
@@ -36,11 +36,11 @@ Suggests: testthat (>= 3.0.0), dplyr, knitr, rmarkdown, tidyr, purrr,
         ggplot2, coro, rentrez, rrapply, covr
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.3
 Config/testthat/edition: 3
 Depends: R (>= 3.5)
+Config/roxygen2/version: 8.0.0
 NeedsCompilation: no
-Packaged: 2026-01-13 18:50:09 UTC; massimoaria
+Packaged: 2026-07-02 15:49:16 UTC; massimoaria
 Author: Massimo Aria [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0002-8517-9411>),
   Corrado Cuccurullo [ctb] (ORCID:
@@ -49,4 +49,4 @@ Author: Massimo Aria [aut, cre, cph] (ORCID:
   June Choe [aut] (ORCID: <https://orcid.org/0000-0002-0701-921X>)
 Maintainer: Massimo Aria <aria@unina.it>
 Repository: CRAN
-Date/Publication: 2026-01-14 08:40:02 UTC
+Date/Publication: 2026-07-03 02:30:02 UTC

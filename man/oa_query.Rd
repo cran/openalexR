@@ -23,7 +23,7 @@ Filters narrow the list down to just entities that meet a particular
 condition--specifically, a particular value for a particular attribute.
 Filters are formatted as attribute = value.
 The complete list of filter attributes for each entity can be found at
-<https://docs.openalex.org/how-to-use-the-api/get-lists-of-entities/filter-entity-lists>.
+<https://developers.openalex.org/guides/filtering>.
 For example, `cited_by_count = ">100"`,
 `title.search = c("bibliometric analysis", "science mapping")`,
 or `to_publication_date = "2021-12-31"`.}
@@ -31,33 +31,19 @@ or `to_publication_date = "2021-12-31"`.}
 \item{multiple_id}{Logical. Whether there are multiple identifiers.}
 
 \item{identifier}{Character. OpenAlex ID(s) as item identifier(s).
-See more at <https://docs.openalex.org/how-to-use-the-api/get-single-entities#the-openalex-id>.}
+See more at <https://developers.openalex.org/guides/get>.}
 
 \item{entity}{Character. Scholarly entity of the search.
 The argument can be one of
 c("works", "authors", "institutions", "keywords", "funders", "sources", "publishers", "topics").
 If not provided, `entity` is guessed from `identifier`.}
 
-\item{options}{List. Additional parameters to add in the query. For example:
-
-- `select` Character vector. Top-level fields to show in output.
-Defaults to NULL, which returns all fields.
-https://docs.openalex.org/how-to-use-the-api/get-single-entities/select-fields
-
-- `sort` Character. Attribute to sort by.
-For example: "display_name" for sources or "cited_by_count:desc" for works.
-See more at <https://docs.openalex.org/how-to-use-the-api/get-lists-of-entities/sort-entity-lists>.
-
-- `sample` Integer. Number of (random) records to return.
-Should be no larger than 10,000.
-Defaults to NULL, which returns all records satisfying the query.
-Read more at <https://docs.openalex.org/how-to-use-the-api/get-lists-of-entities/sample-entity-lists>.
-
-- `seed` Integer.
-A seed value in order to retrieve the same set of random records in
-the same order when used multiple times with `sample`.
-IMPORTANT NOTE: Depending on your query, random results with a seed value may change over time due to new records coming into OpenAlex.
-This argument is likely only useful when queries happen close together (within a day).}
+\item{options}{List or `oa_options()` object. Additional parameters to add to
+the query, such as `select`, `sort`, `sample`, `seed`, and the paging
+controls (`per_page`, `paging`, `pages`).
+See [oa_options()] for the full list of options, their defaults, and details.
+A plain named list (e.g. `list(sort = "cited_by_count:desc")`) is also
+accepted for backward compatibility.}
 
 \item{search}{Character. Search is just another kind of filter, one that all five endpoints support.
 But unlike the other filters, search does NOT require an exact match.
@@ -68,7 +54,7 @@ To filter using search, append .search to the end of the attribute you're filter
 
 \item{group_by}{Character. Attribute to group by.
 For example: "oa_status" for works.
-See more at <https://docs.openalex.org/how-to-use-the-api/get-groups-of-entities>.}
+See more at <https://developers.openalex.org/guides/grouping>.}
 
 \item{endpoint}{Character. URL of the OpenAlex Endpoint API server.
 Defaults to endpoint = "https://api.openalex.org".}
@@ -84,7 +70,7 @@ to the number of characters to print: \code{Sys.setenv(openalexR.print = 70)}.}
 a character containing the query in OpenAlex format.
 
 For more extensive information about OpenAlex API, please visit:
-<https://docs.openalex.org>.
+<https://developers.openalex.org/>.
 }
 \description{
 It generates a valid query, written following the OpenAlex API Language, from a set of parameters.
@@ -96,7 +82,7 @@ query_auth <- oa_query(identifier = "A5069892096", verbose = TRUE)
 
 ### EXAMPLE 1: Full record about an entity.
 
-# Query to obtain allinformation about a particular work/author/institution/etc.:
+# Query to obtain all information about a particular work/author/institution/etc.:
 
 #  The following paper is associated to the OpenAlex-id W2755950973.
 
