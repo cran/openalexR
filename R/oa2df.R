@@ -718,7 +718,19 @@ concepts2df <- function(
 #'
 #' @export
 keywords2df <- function(data, verbose = TRUE) {
-  tibble::as_tibble(subs_na(data, "rbind_df")[[1]])
+  # Keep nested objects and arrays in list columns so each keyword stays on
+  # one row, even when its topics or alternative names have different lengths.
+  nested_fields <- c("display_name_alternatives", "ids", "primary_topic", "topics")
+  rbind_oa_ls(lapply(data, function(item) {
+    lapply(setNames(names(item), names(item)), function(field) {
+      value <- item[[field]] %||% NA
+      if (field %in% nested_fields || is.list(value) || length(value) != 1L) {
+        list(value)
+      } else {
+        value
+      }
+    })
+  }))
 }
 
 
@@ -831,6 +843,7 @@ sources2df <- function(
     "identical", "is_in_doaj_since_year",
     "identical", "is_in_scielo",
     "identical", "is_ojs",
+    "identical", "is_preprint_repository",
     "identical", "oa_flip_year",
     "identical", "oa_works_count",
     "identical", "first_publication_year",
